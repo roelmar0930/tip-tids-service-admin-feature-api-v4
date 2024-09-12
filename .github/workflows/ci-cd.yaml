@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SERVICE_NAME: engagement-app-api
+      SERVICE_NAME: engagement-app-api-v4
       PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
       REGION: ${{ secrets.GCP_REGION }}
       CI: false
@@ -32,6 +32,7 @@ jobs:
         uses: mathieudutour/github-tag-action@v6.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ inputs.environment == 'production' }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
