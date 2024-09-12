@@ -1,0 +1,13 @@
+logs
+*.log
+pids
+*.pid
+*.seed
+.grunt
+node_modules
+npm-debug.log
+.idea
+engagementAppKey.json
+creds.json
+config/config.js
+config/config.js

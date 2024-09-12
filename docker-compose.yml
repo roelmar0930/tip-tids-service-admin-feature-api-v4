@@ -1,0 +1,9 @@
+version: '2.0'
+
+services: 
+  web:
+    image: admin-feature
+    init: true
+    build: .
+    ports:
+      - "3000:3000"

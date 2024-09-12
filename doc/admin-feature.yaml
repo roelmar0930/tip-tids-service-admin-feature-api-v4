@@ -1,0 +1,378 @@
+swagger: '2.0'
+info:
+  title: Engagement API for Admin Management
+  description: Swagger/Yaml for Engagement API
+  version: 1.0.0
+host: serverRoot
+basePath: /v2/api/engagement/
+schemes:
+  - https
+consumes:
+  - application/json;charset=utf-8
+produces:
+  - application/json;charset=utf-8
+paths:
+  /feature:
+    get:
+      operationId: listFeatures
+      summary: List of Admin-Managed Feature
+      description: >-
+        This operation list or find Admin-Managed entities
+        
+        Required Query Parameter is name. Possible values are the following
+
+        | Feature Name           |      Description                      |
+
+        |------------------------|---------------------------------------|
+
+        | RoleAssignment | Team Member Role Assignment               |
+
+        | SupOrgAssignment | Team Member Support Organization Assignment               |
+        
+        | Feed | Feed information               | 
+
+        | FeedAssignment | Team Member Feed Assignment               |
+        
+        | Event | Event Information               |
+        
+        | EventAssignment | Team Member Event Assignment               |
+        
+        | TaskReminder | Task or reminder Information               |
+        
+        | TaskReminderAssignment | Team Member Task or Reminder Assignment               |
+        
+        | ReportLog | Report Log Information               |
+        
+      tags:
+        - feature
+      parameters:
+        - name: name
+          description: Admin Feature Name
+          required: true
+          in: query
+          type: string
+        - name: workdayId
+          description: WorkDay IDs
+          in: query
+          type: array
+          items:
+            type: string
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/FeatureInfo'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      operationId: addFeature
+      summary: Adds admin information
+      description: This operation adds admin-related information using
+      tags:
+        - feature
+      parameters:
+        - schema:
+            $ref: '#/definitions/FeatureInfo'
+          required: true
+          in: body
+          name: request
+          description: Feature info
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/FeatureInfo'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+    patch:
+      operationId: updateFeature
+      summary: Update feature information
+      description: This operation updates admin-related information
+      tags:
+        - feature
+      parameters:
+        - schema:
+            $ref: '#/definitions/FeatureInfo'
+          required: true
+          in: body
+          name: request
+          description: Feature info
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/FeatureInfo'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+    delete:
+      operationId: removeFeature
+      summary: Remove admin-related information
+      description: This operation removes admin-related information using
+      tags:
+        - feature
+      parameters:
+        - schema:
+            $ref: '#/definitions/FeatureInfo'
+          in: body
+          name: request
+          description: Feature info
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/FeatureInfo'
+        '400':
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/Error'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/Error'
+        '405':
+          description: Method Not allowed
+          schema:
+            $ref: '#/definitions/Error'
+        '409':
+          description: Conflict
+          schema:
+            $ref: '#/definitions/Error'
+        '500':
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Feature:
+    type: object
+    description: >-
+      Abstracted information of all Admin-managed entities
+    properties:
+      id:
+        type: string
+        description: System Id
+      workdayId:
+        type: string
+        description: Refers to the workday ID of a team member
+      roleName:
+        type: string
+        description: Role name
+      supOrgCd:
+        type: string
+        description: Supervisory Organization Code
+      feedId:
+        type: string
+        description: Feed Id
+      title:
+        type: string
+        description: Entity Title
+      detail:
+        type: string
+        description: Entity details
+      pictureUrl:
+        type: string
+        description: URL of the picture related to the entity
+      createdDate:
+        type: string
+        description: Created Date
+      createdBy:
+        type: string
+        description: Name of the Author
+      updatedDate:
+        type: string
+        description: Date of Last Update
+      updatedBy:
+        type: string
+        description: Name of the Author who made the last change
+      publishedDate:
+        type: string
+        description: Date the feature was published
+      publishedBy:
+        type: string
+        description: Name of the Author who published the feature
+      eventId:
+        type: string
+        description: Event Id
+      venue:
+        type: string
+        description: Venue name
+      venueDetails:
+        type: string
+        description: Venue details
+      starsNum:
+        type: string
+        description: Number of stars that can be earned
+      startDate:
+        type: string
+        description: Start Date
+      endDate:
+        type: string
+        description: End Date
+      startTime:
+        type: string
+        description: Start Time
+      endTime:
+        type: string
+        description: End Date
+      code:
+        type: string
+        description: Code Name
+      loggedInTime:
+        type: string
+        description: Time of Logged In
+      taskReminderId:
+        type: string
+        description: Task Reminder ID
+      optionalInd:
+        type: string
+        description: work shift
+      dueDateTime:
+        type: string
+        description: Due Date Time
+      completionTime:
+        type: string
+        description: Time Completed
+      reportLogId:
+        type: string
+        description: Report Log Id
+      reportUrl:        
+        type: string
+        description: Report Log Id
+  FeatureInfo:
+    type: object
+    properties:
+      name:
+        description: Feature Name
+        type: string
+      feature:
+        type: array
+        items: 
+          $ref: '#/definitions/Feature'
+  Error:
+    description: >-
+      Used when an API throws an Error, typically with a HTTP error
+      response-code (3xx, 4xx, 5xx)
+    type: object
+    required:
+      - code
+      - reason
+    properties:
+      code:
+        type: string
+        description: 'Application relevant detail, defined in the API or a common list.'
+      reason:
+        type: string
+        description: >-
+          Explanation of the reason for the error which can be shown to a client
+          user.
+      message:
+        type: string
+        description: >-
+          More details and corrective actions related to the error which can be
+          shown to a client user.
+      status:
+        type: string
+        description: HTTP Error code extension
+      referenceError:
+        type: string
+        format: uri
+        description: URI of documentation describing the error.
+      '@baseType':
+        type: string
+        description: 'When sub-classing, this defines the super-class.'
+      '@schemaLocation':
+        type: string
+        format: uri
+        description: >-
+          A URI to a JSON-Schema file that defines additional attributes and
+          relationships
+      '@type':
+        type: string
+        description: 'When sub-classing, this defines the sub-class entity name.'
