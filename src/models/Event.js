@@ -1,160 +1,165 @@
 const mongoose = require("mongoose");
 const { formatDateToManilaUTC } = require("../utils/DateUtils");
 
-let Event;
+const eventSchema = new mongoose.Schema({
+  id: {
+    type: Number,
+    require: true,
+    unique: true,
+  },
+  title: {
+    type: String,
+    require: true,
+  },
+  details: {
+    type: String,
+    require: true,
+  },
+  venue: {
+    type: String,
+    require: true,
+  },
+  startDate: {
+    type: Date,
+    require: true,
+  },
+  endDate: {
+    type: Date,
+    require: true,
+  },
+  status: {
+    type: String,
+    default: "inactive",
+    require: true,
+  },
+  registrationCode: {
+    type: String,
+    require: true,
+  },
+  targetCompliance: {
+    type: Number,
+    require: true,
+  },
+  category: {
+    type: String,
+    require: true,
+  },
+  type: {
+    type: String,
+    require: true,
+  },
+  importance: {
+    type: String,
+  },
+  googleMeetLink: {
+    type: String,
+  },
+  postSurveyURL: {
+    type: String,
+  },
+  estimatedBudget: {
+    type: Number,
+  },
+  numberOfInviteSent: {
+    type: Number,
+    require: true,
+  },
+  pointsNum: {
+    type: Number,
+    require: true,
+  },
+  imageFilename: {
+    type: String,
+    require: true,
+  },
+  isCompleted: {
+    type: Boolean,
+    default: false,
+    require: true,
+  },
+  isCancelled: {
+    type: Boolean,
+    default: false,
+    require: true,
+  },
+  isArchived: {
+    type: Boolean,
+    default: false,
+    require: true,
+  },
+  createdAt: {
+    type: Date,
+    default: formatDateToManilaUTC(new Date()),
+  },
+  createdBy: {
+    email: {
+      type: String,
+      require: true,
+    },
+    workdayId: {
+      type: String,
+      require: true,
+    },
+  },
+  updatedAt: {
+    type: Date,
+  },
+  updatedBy: {
+    email: {
+      type: String,
+    },
+    workdayId: {
+      type: String,
+    },
+  },
+});
 
-try {
-  Event = mongoose.model("event");
-} catch (error) {
-  const { Schema } = mongoose;
-  const eventSchema = new Schema({
-    eventId: {
-      type: Number,
-    },
-    title: {
-      type: String,
-    },
-    eventDetails: {
-      type: String,
-    },
-    venueDetails: {
-      type: String,
-    },
-    pictureUrl: {
-      type: String,
-    },
-    startDate: {
-      type: Date,
-    },
-    endDate: {
-      type: Date,
-    },
-    code: {
-      type: String,
-    },
-    category: {
-      type: String,
-    },
-    eventType: {
-      type: String,
-    },
-    importance: {
-      type: String,
-    },
-    gmeetLink: {
-      type: String,
-    },
-    postEventSurveyURL: {
-      type: String,
-    },
-    estimatedBudget: {
-      type: Number,
-    },
-    numberOfInviteSent: {
-      type: Number,
-    },
-    starsNum: {
-      type: Number,
-    },
-    regLink: {
-      type: String,
-    },
-    qrLink: {
-      type: String,
-    },
-    createdAt: {
-      type: Date,
-      default: formatDateToManilaUTC(new Date()),
-    },
-    createdBy: {
-      type: String,
-    },
-    updatedAt: {
-      type: Date,
-    },
-    updatedBy: {
-      type: String,
-    },
-    qrCodeUrl: {
-      type: String,
-    },
-    imageUrl: {
-      type: String,
-    },
-    authenticatedUrl: {
-      type: String,
-    },
-    status: {
-      type: String,
-      default: "Inactive",
-    },
-    eventType: {
-      type: String,
-    },
-    attendees: {
-      type: Number,
-    },
-    registrants: {
-      type: Number,
-    },
-    didNotAttend: {
-      type: Number,
-    },
-    targetCompliance: {
-      type: Number,
-    },
-    tinyUrl: {
-      type: String,
-    },
-    modalUrl: {
-      type: String,
-    },
-    registrationCode: {
-      type: String,
-    },
-  });
+// Middleware to set pointsNum before saving
+eventSchema.pre("save", async function (next) {
+  const doc = this;
+  if (doc.isNew) {
+    const lastId = await Event.findOne({}, {}, { sort: { id: -1 } });
+    const nextId = lastId ? lastId.id + 1 : 1;
+    doc.id = nextId;
+  }
 
-  // Middleware to set starsNum before saving
-  eventSchema.pre("save", function (next) {
-    if (this.category === "TIDS") {
-      this.starsNum = 50;
-    } else if (this.category === "teamEvent") {
-      this.starsNum = 30;
-    } else if (this.category === "happyhere") {
-      this.starsNum = 20;
-    } else if (this.category === "COP") {
-      this.starsNum = 10;
-    }
-    next();
-  });
+  if (this.category === "TIDS") {
+    this.pointsNum = 50;
+  } else if (this.category === "teamEvent") {
+    this.pointsNum = 30;
+  } else if (this.category === "happyhere") {
+    this.pointsNum = 20;
+  } else if (this.category === "COP") {
+    this.pointsNum = 10;
+  }
+  next();
+});
 
-  // Middleware to set starsNum before updating
-  eventSchema.pre("findOneAndUpdate", function (next) {
-    const update = this.getUpdate();
+// Middleware to set pointsNum before updating
+eventSchema.pre("findOneAndUpdate", function (next) {
+  const update = this.getUpdate();
 
-    if (update.category === "TIDS") {
-      update.starsNum = 50;
-    } else if (update.category === "teamEvent") {
-      update.starsNum = 30;
-    } else if (update.category === "happyhere") {
-      update.starsNum = 20;
-    } else if (update.category === "COP") {
-      update.starsNum = 10;
-    }
+  if (update.category === "TIDS") {
+    update.pointsNum = 50;
+  } else if (update.category === "teamEvent") {
+    update.pointsNum = 30;
+  } else if (update.category === "happyhere") {
+    update.pointsNum = 20;
+  } else if (update.category === "COP") {
+    update.pointsNum = 10;
+  }
 
-    next();
-  });
+  next();
+});
 
-  // to remove the default properties of the JSON that is not needed after POST and set the default id to eventId
-  eventSchema.set("toJSON", {
-    transform: (doc, ret, options) => {
-      delete ret._id;
-      delete ret.__v;
-      return ret;
-    },
-  });
+eventSchema.set("toJSON", {
+  transform: (doc, ret, options) => {
+    delete ret._id;
+    delete ret.__v;
+    return ret;
+  },
+});
 
-  Event = mongoose.model("event", eventSchema);
-}
+const Event = mongoose.model("Event", eventSchema, "EVENT");
 
 module.exports = Event;

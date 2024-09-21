@@ -1,70 +1,58 @@
 const mongoose = require("mongoose");
-const { Schema } = mongoose;
 
-// Define the schema outside of the try-catch block
-const teamMemberPointSchema = new Schema({
-  workdayId: {
+const teamMemberPointsSchema = new mongoose.Schema({
+  teamMemberWorkdayId: {
     type: Number,
-  },
-  employeeName: {
-    type: String,
+    required: true,
   },
   email: {
     type: String,
+    required: true,
   },
   year: {
     type: Number,
+    required: true,
   },
   starPoints: {
     type: Number,
-    default: 0, // Ensure the field is created with a default value if empty
+    required: true,
   },
   starsPesoConversion: {
     type: Number,
-    default: 0, // Ensure the field is created with a default value if empty
+    required: true,
   },
-  starPointsDeducted: {
+  starsDeduction: {
     type: Number,
-    default: 0, // Ensure the field is created with a default value if empty
+    required: true,
   },
   copPoints: {
     type: Number,
-    default: 0, // Ensure the field is created with a default value if empty
+    required: true,
   },
   copPesoConversion: {
     type: Number,
-    default: 0, // Ensure the field is created with a default value if empty
+    required: true,
   },
-  copPointsDeducted: {
+  copDeduction: {
     type: Number,
-    default: 0, // Ensure the field is created with a default value if empty
+    required: true,
   },
 });
 
-// Transform the output JSON to remove _id and __v
-teamMemberPointSchema.set("toJSON", {
-  transform: (doc, ret) => {
-    delete ret._id;
-    delete ret.__v;
-    return ret;
-  },
+teamMemberPointsSchema.pre("save", async function (next) {
+  const doc = this;
+  if (doc.isNew) {
+    const lastId = await TeamMemberPoints.findOne({}, {}, { sort: { id: -1 } });
+    const nextId = lastId ? lastId.id + 1 : 10000000;
+    doc.id = nextId;
+  }
+  next();
 });
 
-// Initialize the model
-let TeamMemberPoint;
+const TeamMemberPoints = mongoose.model(
+  "TEAM_MEMBER_POINTS",
+  teamMemberPointsSchema,
+  "TEAM_MEMBER_POINTS"
+);
 
-try {
-  TeamMemberPoint = mongoose.model(
-    "TeamMemberPoint",
-    teamMemberPointSchema,
-    "teamMemberPoint"
-  );
-} catch (error) {
-  TeamMemberPoint = mongoose.model(
-    "TeamMemberPoint",
-    teamMemberPointSchema,
-    "teamMemberPoint"
-  );
-}
-
-module.exports = TeamMemberPoint;
+module.exports = TeamMemberPoints;
