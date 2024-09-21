@@ -1,12 +1,5 @@
 const config = require("./config/config");
 const mongoose = require("mongoose");
-require("./models/Event");
-require("./models/Feature");
-require("./models/TaskReminder");
-require("./models/TeamMember");
-require("./models/Registration");
-require("./models/Order");
-require("./models/Task");
 
 mongoose.connect(config.databaseUri, {
   useNewUrlParser: true,

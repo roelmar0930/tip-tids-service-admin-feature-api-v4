@@ -61,7 +61,7 @@ jobs:
           gcloud secrets versions access latest --secret=ENGAGEMENT_APP_KEY_JSON > engagementAppKey.json
           ENGAGEMENT_APP_KEY_JSON=$(cat engagementAppKey.json | base64 -w0)
           echo "ENGAGEMENT_APP_KEY_JSON=$ENGAGEMENT_APP_KEY_JSON" >> $GITHUB_ENV
-          gcloud secrets versions access latest --secret=ENGAGEMENT_APP_CREDS_PR > creds.json
+          gcloud secrets versions access latest --secret=ENGAGEMENT_APP_CREDS_PR_V4 > creds.json
           CREDS_JSON=$(cat creds.json | base64 -w0)
           echo "CREDS_JSON=$CREDS_JSON" >> $GITHUB_ENV
 
@@ -72,7 +72,7 @@ jobs:
           gcloud secrets versions access latest --secret=ENGAGEMENT_APP_KEY_JSON > engagementAppKey.json
           ENGAGEMENT_APP_KEY_JSON=$(cat engagementAppKey.json | base64 -w0)
           echo "ENGAGEMENT_APP_KEY_JSON=$ENGAGEMENT_APP_KEY_JSON" >> $GITHUB_ENV
-          gcloud secrets versions access latest --secret=ENGAGEMENT_APP_CREDS_QA > creds.json
+          gcloud secrets versions access latest --secret=ENGAGEMENT_APP_CREDS_QA_V4 > creds.json
           CREDS_JSON=$(cat creds.json | base64 -w0)
           echo "CREDS_JSON=$CREDS_JSON" >> $GITHUB_ENV
 
@@ -99,7 +99,7 @@ jobs:
           GOOGLE_CHAT_WEBHOOK_URL: ${{ secrets.GOOGLE_CHAT_WEBHOOK_URL }}
         run: |
           # Define variables
-          APPLICATION_NAME="Engagement App API" # Replace with your application name
+          APPLICATION_NAME="Engagement App API V4" # Replace with your application name
           ENVIRONMENT="${{ github.event.inputs.environment }}"
           BRANCH="${{ github.ref_name }}"
           DEPLOYER="${{ github.actor }}"
