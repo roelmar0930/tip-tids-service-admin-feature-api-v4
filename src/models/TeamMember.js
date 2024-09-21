@@ -1,69 +1,84 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const { formatDateToManilaUTC } = require("../utils/DateUtils");
+const TeamMemberEvent = require("./TeamMemberEvent");
 
-let TeamMember;
+const teamMemberSchema = new mongoose.Schema({
+  id: {
+    type: Number,
+    required: true,
+    unique: true,
+  },
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+  },
+  middleName: {
+    type: String,
+  },
+  suffix: {
+    type: String,
+  },
+  jobProfile: {
+    type: String,
+  },
+  workEmailAddress: {
+    type: String,
+    required: true,
+  },
+  immediateManagerName: {
+    type: String,
+  },
+  immediateManagerWorkdayId: {
+    type: String,
+  },
+  functionalArea: {
+    type: String,
+  },
+  site: {
+    type: String,
+  },
+  hireDate: {
+    type: Date,
+    required: true,
+  },
+  role: {
+    type: String,
+  },
+  createdAt: {
+    type: Date,
+    default: formatDateToManilaUTC(new Date()),
+  },
+  updatedAt: {
+    type: Date,
+  },
+});
 
-try {
-    TeamMember = mongoose.model('TeamMember', teamMemberSchema, 'TeamMembers');
-} catch (error) {
-    const { Schema } = mongoose;
-    const teamMemberSchema = new Schema({
-        workdayId: {
-            type: Number
-        },
-        employeeName: {
-            type: String
-        },
-        practice: {
-            type: String
-        },
-        functionalArea: {
-            type: String
-        },
-        totalStars: {
-            type: Number
-        },
-        starPoints: {
-            type: Number
-        },
-        starsPesoConversion: {
-            type: String
-        },
-        stars2022: {
-            type: Number
-        },
-        stars2023: {
-            type: Number
-        },
-        starPointsDeducted: {
-            type: Number
-        },
-        copPoints: {
-            type: Number
-        },
-        copPesoConversion: {
-            type: Number
-        },
-        cop2022Points: {
-            type: Number
-        },
-        cop2023Points: {
-            type: Number
-        },
-        copPointsDeducted: {
-            type: Number
-        }
-    });
+teamMemberSchema.pre("save", async function (next) {
+  const doc = this;
+  if (doc.isNew) {
+    const lastId = await TeamMemberEvent.findOne({}, {}, { sort: { id: -1 } });
+    const nextId = lastId ? lastId.id + 1 : 1;
+    doc.id = nextId;
+  }
+  next();
+});
 
-    // to remove the default properties of the JSON that is not needed after POST and set the default id to eventId
-    teamMemberSchema.set('toJSON', {
-        transform: (doc, ret, options) => {
-            delete ret._id;
-            delete ret.__v;
-            return ret;
-        }
-    });
+teamMemberSchema.set("toJSON", {
+  transform: (doc, ret, options) => {
+    delete ret._id;
+    delete ret.__v;
+    return ret;
+  },
+});
 
-    TeamMember = mongoose.model('TeamMember', teamMemberSchema, 'TeamMembers');
-}
+const TeamMember = mongoose.model(
+  "TEAM_MEMBER",
+  teamMemberSchema,
+  "TEAM_MEMBER"
+);
 
 module.exports = TeamMember;
