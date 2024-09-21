@@ -2,34 +2,35 @@ const express = require("express");
 const router = express.Router();
 const eventsController = require("../controllers/EventsController");
 const upload = require("../middleware/UploadMiddleware");
-
-router.get("/getAllEvents", eventsController.getAllEvents);
-
-router.post("/getEventDetailsByDate", eventsController.getEventDetailsByDate);
-
-router.get("/getEventDetails/:eventId", eventsController.getEventDetails);
-
-router.post("/register", eventsController.register);
+const {
+  validateGetEventDetails,
+  validateGetAllEvents,
+} = require("../middleware/validator/EventValidator");
 
 router.get(
-  "/getUnregisteredEvents/:email",
-  eventsController.getUnregisteredEvents
+  "/getAllEvents",
+  validateGetAllEvents,
+  eventsController.getAllEvents
 );
 
-router.get("/getRegisteredEvents/:email", eventsController.getRegisteredEvents);
+router.get(
+  "/getEventDetails",
+  validateGetEventDetails,
+  eventsController.getEventDetails
+);
 
 router.post(
   "/createEvent",
-  upload.single("imgfile"),
+  upload.single("imageFile"),
   eventsController.createEvent
 );
 
 router.patch(
-  "/updateEvent/:eventId",
+  "/updateEvent",
   upload.single("imageFile"),
   eventsController.updateEvent
 );
 
-router.put("/deleteEvent/:eventId", eventsController.deleteEvent);
+router.put("/deleteEvent/:", eventsController.deleteEvent);
 
 module.exports = router;

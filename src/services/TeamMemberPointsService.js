@@ -1,7 +1,7 @@
 const TeamMemberPoints = require("../models/TeamMemberPoints");
-const TeamRosterService = require("./TeamRosterService");
+const TeamMemberService = require("./TeamMemberService");
 
-class TeamMemberService {
+class TeamMemberPointsService {
   async getTeamMemeberPointsByEmail(email) {
     try {
       const teamMemberPoints = await TeamMemberPoints.find({ email });
@@ -27,14 +27,14 @@ class TeamMemberService {
 
       // If no record is found, retrieve team member info and create a new record
       if (!currentYearPoints) {
-        const teamMemberInfo = await TeamRosterService.getTeamMemberInfoByEmail(
+        const teamMemberInfo = await TeamMemberService.getTeamMemberInfoByEmail(
           email
         );
 
         if (teamMemberInfo) {
           currentYearPoints = new TeamMemberPoints({
             year: yearToday,
-            workdayId: teamMemberInfo.workorderId,
+            workdayId: teamMemberInfo.workdayId,
             employeeName: teamMemberInfo.employeeName,
             email, // Ensure email is correctly used here
             copPoints: 0,
@@ -63,4 +63,4 @@ class TeamMemberService {
   }
 }
 
-module.exports = new TeamMemberService();
+module.exports = new TeamMemberPointsService();
