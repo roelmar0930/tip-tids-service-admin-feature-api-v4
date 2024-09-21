@@ -5,24 +5,19 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
 require("./database");
-const moment = require("moment-timezone");
 
 // Middleware
 const ErrorHandler = require("./middleware/ErrorHandler");
 
 // Routes
 const IndexRouter = require("./routes/IndexRoute");
-const featuresRouter = require("./routes/FeaturesRoute");
-const overviewRouter = require("./routes/OverviewRoute");
-const eventsRouter = require("./routes/EventsRoute");
-const orderRouter = require("./routes/OrderRoute");
-const taskRouter = require("./routes/TaskRoute");
-const googleRouter = require("./routes/GoogleRoute");
-const googleRouterV4 = require("./routes/GoogleV4Route");
+const GoogleRouter = require("./routes/GoogleRoute");
+const EventsRouter = require("./routes/EventsRoute");
+const TaskRouter = require("./routes/TaskRoute");
+const ImageRoute = require("./routes/ImageRoute");
 const TeamMemberPointsRouter = require("./routes/TeamMemberPointsRoute");
-const teamMemberRouter = require("./routes/TeamMemberRoute");
-const TeamRosterRoute = require("./routes/TeamRosterRoute");
-const ScheduleJobs = require("./schedule/ScheduleJobs");
+const TeamMemberRouter = require("./routes/TeamMemberRoute");
+// const ScheduleJobs = require("./schedule/ScheduleJobs");
 
 const app = express();
 
@@ -38,16 +33,12 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", IndexRouter);
-app.use("/features", featuresRouter);
-app.use("/overview", overviewRouter);
-app.use("/events", eventsRouter);
-app.use("/order", orderRouter);
-app.use("/task", taskRouter);
+app.use("/google", GoogleRouter);
+app.use("/events", EventsRouter);
+app.use("/task", TaskRouter);
+app.use("/image", ImageRoute);
+app.use("/teamMember", TeamMemberRouter);
 app.use("/teamMemberPoints", TeamMemberPointsRouter);
-app.use("/teamMember", teamMemberRouter);
-app.use("/teamRoster", TeamRosterRoute);
-app.use("/google", googleRouter);
-app.use("/v4/google", googleRouterV4);
 
 app.get("/status", (req, res) => {
   // You can perform any checks or logic here to determine the health status
@@ -67,6 +58,6 @@ app.use((req, res, next) => {
 
 app.use(ErrorHandler);
 
-ScheduleJobs();
+// ScheduleJobs();
 
 module.exports = app;

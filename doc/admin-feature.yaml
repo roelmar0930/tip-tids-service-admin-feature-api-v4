@@ -1,4 +1,4 @@
-swagger: '2.0'
+swagger: "2.0"
 info:
   title: Engagement API for Admin Management
   description: Swagger/Yaml for Engagement API
@@ -18,7 +18,7 @@ paths:
       summary: List of Admin-Managed Feature
       description: >-
         This operation list or find Admin-Managed entities
-        
+
         Required Query Parameter is name. Possible values are the following
 
         | Feature Name           |      Description                      |
@@ -28,21 +28,21 @@ paths:
         | RoleAssignment | Team Member Role Assignment               |
 
         | SupOrgAssignment | Team Member Support Organization Assignment               |
-        
+
         | Feed | Feed information               | 
 
         | FeedAssignment | Team Member Feed Assignment               |
-        
+
         | Event | Event Information               |
-        
+
         | EventAssignment | Team Member Event Assignment               |
-        
+
         | TaskReminder | Task or reminder Information               |
-        
+
         | TaskReminderAssignment | Team Member Task or Reminder Assignment               |
-        
+
         | ReportLog | Report Log Information               |
-        
+
       tags:
         - feature
       parameters:
@@ -58,40 +58,40 @@ paths:
           items:
             type: string
       responses:
-        '200':
+        "200":
           description: Success
           schema:
             type: array
             items:
-              $ref: '#/definitions/FeatureInfo'
-        '400':
+              $ref: "#/definitions/FeatureInfo"
+        "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/Error'
-        '401':
+            $ref: "#/definitions/Error"
+        "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/Error'
-        '403':
+            $ref: "#/definitions/Error"
+        "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/Error'
-        '404':
+            $ref: "#/definitions/Error"
+        "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/Error'
-        '405':
+            $ref: "#/definitions/Error"
+        "405":
           description: Method Not allowed
           schema:
-            $ref: '#/definitions/Error'
-        '409':
+            $ref: "#/definitions/Error"
+        "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/Error'
-        '500':
+            $ref: "#/definitions/Error"
+        "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
     post:
       operationId: addFeature
       summary: Adds admin information
@@ -100,44 +100,44 @@ paths:
         - feature
       parameters:
         - schema:
-            $ref: '#/definitions/FeatureInfo'
+            $ref: "#/definitions/FeatureInfo"
           required: true
           in: body
           name: request
           description: Feature info
       responses:
-        '200':
+        "200":
           description: Success
           schema:
-            $ref: '#/definitions/FeatureInfo'
-        '400':
+            $ref: "#/definitions/FeatureInfo"
+        "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/Error'
-        '401':
+            $ref: "#/definitions/Error"
+        "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/Error'
-        '403':
+            $ref: "#/definitions/Error"
+        "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/Error'
-        '404':
+            $ref: "#/definitions/Error"
+        "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/Error'
-        '405':
+            $ref: "#/definitions/Error"
+        "405":
           description: Method Not allowed
           schema:
-            $ref: '#/definitions/Error'
-        '409':
+            $ref: "#/definitions/Error"
+        "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/Error'
-        '500':
+            $ref: "#/definitions/Error"
+        "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
     patch:
       operationId: updateFeature
       summary: Update feature information
@@ -146,44 +146,44 @@ paths:
         - feature
       parameters:
         - schema:
-            $ref: '#/definitions/FeatureInfo'
+            $ref: "#/definitions/FeatureInfo"
           required: true
           in: body
           name: request
           description: Feature info
       responses:
-        '200':
+        "200":
           description: Success
           schema:
-            $ref: '#/definitions/FeatureInfo'
-        '400':
+            $ref: "#/definitions/FeatureInfo"
+        "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/Error'
-        '401':
+            $ref: "#/definitions/Error"
+        "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/Error'
-        '403':
+            $ref: "#/definitions/Error"
+        "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/Error'
-        '404':
+            $ref: "#/definitions/Error"
+        "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/Error'
-        '405':
+            $ref: "#/definitions/Error"
+        "405":
           description: Method Not allowed
           schema:
-            $ref: '#/definitions/Error'
-        '409':
+            $ref: "#/definitions/Error"
+        "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/Error'
-        '500':
+            $ref: "#/definitions/Error"
+        "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
     delete:
       operationId: removeFeature
       summary: Remove admin-related information
@@ -192,43 +192,43 @@ paths:
         - feature
       parameters:
         - schema:
-            $ref: '#/definitions/FeatureInfo'
+            $ref: "#/definitions/FeatureInfo"
           in: body
           name: request
           description: Feature info
       responses:
-        '200':
+        "200":
           description: Success
           schema:
-            $ref: '#/definitions/FeatureInfo'
-        '400':
+            $ref: "#/definitions/FeatureInfo"
+        "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/Error'
-        '401':
+            $ref: "#/definitions/Error"
+        "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/Error'
-        '403':
+            $ref: "#/definitions/Error"
+        "403":
           description: Forbidden
           schema:
-            $ref: '#/definitions/Error'
-        '404':
+            $ref: "#/definitions/Error"
+        "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/Error'
-        '405':
+            $ref: "#/definitions/Error"
+        "405":
           description: Method Not allowed
           schema:
-            $ref: '#/definitions/Error'
-        '409':
+            $ref: "#/definitions/Error"
+        "409":
           description: Conflict
           schema:
-            $ref: '#/definitions/Error'
-        '500':
+            $ref: "#/definitions/Error"
+        "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/Error'
+            $ref: "#/definitions/Error"
 definitions:
   Feature:
     type: object
@@ -286,7 +286,7 @@ definitions:
       venueDetails:
         type: string
         description: Venue details
-      starsNum:
+      pointsNum:
         type: string
         description: Number of stars that can be earned
       startDate:
@@ -322,7 +322,7 @@ definitions:
       reportLogId:
         type: string
         description: Report Log Id
-      reportUrl:        
+      reportUrl:
         type: string
         description: Report Log Id
   FeatureInfo:
@@ -333,8 +333,8 @@ definitions:
         type: string
       feature:
         type: array
-        items: 
-          $ref: '#/definitions/Feature'
+        items:
+          $ref: "#/definitions/Feature"
   Error:
     description: >-
       Used when an API throws an Error, typically with a HTTP error
@@ -346,7 +346,7 @@ definitions:
     properties:
       code:
         type: string
-        description: 'Application relevant detail, defined in the API or a common list.'
+        description: "Application relevant detail, defined in the API or a common list."
       reason:
         type: string
         description: >-
@@ -364,15 +364,15 @@ definitions:
         type: string
         format: uri
         description: URI of documentation describing the error.
-      '@baseType':
+      "@baseType":
         type: string
-        description: 'When sub-classing, this defines the super-class.'
-      '@schemaLocation':
+        description: "When sub-classing, this defines the super-class."
+      "@schemaLocation":
         type: string
         format: uri
         description: >-
           A URI to a JSON-Schema file that defines additional attributes and
           relationships
-      '@type':
+      "@type":
         type: string
-        description: 'When sub-classing, this defines the sub-class entity name.'
+        description: "When sub-classing, this defines the sub-class entity name."

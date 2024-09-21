@@ -2,17 +2,10 @@ const express = require("express");
 const { google } = require("googleapis");
 const creds = require("../creds.json");
 const cookieParser = require("cookie-parser");
-const cors = require("cors");
 
 const app = express();
+const router = express.Router();
 app.use(cookieParser());
-
-app.use(
-  cors({
-    origin: process.env.REACT_APP_FRONTEND_URL,
-    credentials: true,
-  })
-);
 
 const oauth2Client = new google.auth.OAuth2(
   creds.web.client_id,
@@ -20,7 +13,7 @@ const oauth2Client = new google.auth.OAuth2(
   creds.web.redirect_uri
 );
 
-app.get("/auth", (req, res) => {
+router.get("/auth", (req, res) => {
   const redirectUrl = req.query.redirectUrl || "/";
   const url = oauth2Client.generateAuthUrl({
     // added hd (that will direct the user to login using the TI credentials)
@@ -35,7 +28,7 @@ app.get("/auth", (req, res) => {
   res.send(url);
 });
 
-app.get("/redirect", async (req, res) => {
+router.get("/redirect", async (req, res) => {
   const code = req.query;
   const authDetails = {
     code: decodeURIComponent(code.code),
@@ -60,7 +53,7 @@ app.get("/redirect", async (req, res) => {
   }
 });
 
-app.post("/getUserInfo", (req, res) => {
+router.post("/getUserInfo", (req, res) => {
   oauth2Client.setCredentials(req.body);
   const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
   oauth2.userinfo.get((err, response) => {
@@ -83,8 +76,8 @@ const authenticate = (req, res, next) => {
   next();
 };
 
-app.get("/auth-status", authenticate, (req, res) => {
+router.get("/auth-status", authenticate, (req, res) => {
   res.status(200).json({ authenticated: true });
 });
 
-module.exports = app;
+module.exports = router;
