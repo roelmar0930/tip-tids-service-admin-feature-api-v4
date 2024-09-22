@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 
 const teamMemberEventSchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    required: true,
-    unique: true,
-  },
   eventId: {
     type: Number,
     required: true,
@@ -35,26 +30,6 @@ const teamMemberEventSchema = new mongoose.Schema({
   address: {
     type: String,
   },
-});
-
-teamMemberEventSchema.pre("validate", async function (next) {
-  const doc = this;
-
-  if (doc.isNew) {
-    try {
-      const lastDoc = await TeamMemberEvent.findOne(
-        {},
-        {},
-        { sort: { id: -1 } }
-      );
-      const nextId = lastDoc ? lastDoc.id + 1 : 1;
-      doc.id = nextId;
-    } catch (error) {
-      return next(error);
-    }
-  }
-
-  next();
 });
 
 teamMemberEventSchema.set("toJSON", {
