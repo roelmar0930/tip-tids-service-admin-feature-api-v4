@@ -42,7 +42,7 @@ class ImageService {
   async getSignedUrl(query) {
     try {
       const file = bucket.file(
-        `${query.fileType}/${query.moduleName}/${query.fileName}`
+        `${query.fileType}/${process.env.NODE_ENV}/${query.moduleName}/${query.fileName}`
       );
 
       const [exists] = await file.exists();

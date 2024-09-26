@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const { formatDateToManilaUTC } = require("../utils/DateUtils");
-const TeamMemberEvent = require("./TeamMemberEvent");
 
 const teamMemberSchema = new mongoose.Schema({
   firstName: {
@@ -21,6 +20,10 @@ const teamMemberSchema = new mongoose.Schema({
     type: String,
   },
   workEmailAddress: {
+    type: String,
+    required: true,
+  },
+  workdayId: {
     type: String,
     required: true,
   },
@@ -51,16 +54,6 @@ const teamMemberSchema = new mongoose.Schema({
     type: Date,
   },
 });
-
-// teamMemberSchema.pre("save", async function (next) {
-//   const doc = this;
-//   if (doc.isNew) {
-//     const lastId = await TeamMemberEvent.findOne({}, {}, { sort: { id: -1 } });
-//     const nextId = lastId ? lastId.id + 1 : 1;
-//     doc.id = nextId;
-//   }
-//   next();
-// });
 
 teamMemberSchema.set("toJSON", {
   transform: (doc, ret, options) => {

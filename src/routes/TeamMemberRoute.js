@@ -8,20 +8,7 @@ const {
 
 router.get("/getAllTeamMember", TeamMemberController.getAllTeamMember);
 
-router.get(
-  "/getTeamMemberInfoByEmail/:workEmailAddress",
-  TeamMemberController.getTeamMemberInfoByEmail
-);
-
-router.get(
-  "/getTeamMemberInfoByWorkorderId/:workdayId",
-  TeamMemberController.getTeamMemberInfoByWorkorderId
-);
-
-router.get(
-  "/getTeamMemberListByManager/:immediateManagerWorkorderId",
-  TeamMemberController.getTeamMemberListByManager
-);
+router.get("/getTeamMember", TeamMemberController.getTeamMember);
 
 router.post("/addEvent", TeamMemberController.addEvent);
 
