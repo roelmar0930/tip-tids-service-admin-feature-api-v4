@@ -59,7 +59,10 @@ class EventsService {
       if (imageFile) {
         const imageBuffer = imageFile.buffer;
         const fileName = `${titlePart}-${datePart}-${timePart}`;
-        await ImageService.uploadImage(imageBuffer, `images/event/${fileName}`);
+        await ImageService.uploadImage(
+          imageBuffer,
+          `images/${process.env.NODE_ENV}/event/${fileName}`
+        );
         imageFilename = fileName;
       } else {
         imageFilename = `DefaultEventImage`;
@@ -95,7 +98,9 @@ class EventsService {
         // REMOVE THE PREVIOUS IMAGE IF FILENAME IS NOT "DefaultEventImage"
         if (event.imageFilename != "DefaultEventImage") {
           console.log("Calling deleteImage function...");
-          await ImageService.deleteImage(`images/event/${event.imageFilename}`);
+          await ImageService.deleteImage(
+            `images/${process.env.NODE_ENV}/event/${event.imageFilename}`
+          );
         }
 
         const { title } = updatedDetails;
@@ -109,7 +114,7 @@ class EventsService {
 
         await ImageService.uploadImage(
           imageFile.buffer,
-          `images/event/${fileName}`
+          `images/${process.env.NODE_ENV}/event/${fileName}`
         );
         updatedDetails.imageFilename = fileName;
       }
