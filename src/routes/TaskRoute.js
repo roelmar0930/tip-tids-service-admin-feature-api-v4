@@ -1,18 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const taskController = require("../controllers/TaskController");
+const {
+  validateGetTaskDetails,
+  validateGetAllTasks,
+} = require("../middleware/validator/TaskValidator");
 
-router.post("/addTask", taskController.addTask);
+router.get(
+    "/getAllTasks", 
+    validateGetAllTasks, 
+    taskController.getAllTasks
+);
 
-router.get("/getAllTasks", taskController.getAllTasks);
+router.get(
+  "/getTaskDetails",
+  validateGetTaskDetails,
+  taskController.getTaskDetails
+);
 
-router.post("/completeTask/:taskId/:email", taskController.completeTask);
+router.post("/createTask", taskController.createTask);
 
-router.put("/updateTaskById/:taskId", taskController.udpateTaskById);
-
-router.get("/getCompletedTasks/:email", taskController.getCompletedTasks);
-
-router.get("/getIncompleteTasks/:email", taskController.getIncompleteTasks);
+router.patch("/updateTask", taskController.updateTask);
 
 router.put("/deleteTask/:taskId", taskController.deleteTask);
 

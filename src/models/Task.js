@@ -40,6 +40,7 @@ const taskSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: formatDateToManilaUTC(new Date()),
+    require: true,
   },
   createdBy: {
     email: {

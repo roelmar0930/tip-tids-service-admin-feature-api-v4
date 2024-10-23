@@ -10,53 +10,71 @@ const getAllTasks = async (req, res) => {
   }
 };
 
-const addTask = async (req, res) => {
+const getTaskDetails = async (req, res, next) => {
   try {
-    const task = await TaskService.addTask(req.body);
+    const details = await TaskService.getTaskDetails(req.query);
+    res.status(200).json(details);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const createTask = async (req, res, next) => {
+  try {
+    const task = await TaskService.createTask(req.body);
     res.status(200).json(task);
   } catch (error) {
     next(error);
   }
 };
 
-const completeTask = async (req, res) => {
+// const completeTask = async (req, res) => {
+//   try {
+//     const completedTask = await TaskService.completeTask(
+//       req.params.taskId,
+//       req.params.email
+//     );
+//     res.status(200).json(completedTask);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+// const udpateTaskById = async (req, res) => {
+//   try {
+//     const task = await TaskService.updateTaskById(req.params.taskId, req.body);
+//     res.status(200).json(task);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
+const updateTask = async (req, res, next) => {
   try {
-    const completedTask = await TaskService.completeTask(
-      req.params.taskId,
-      req.params.email
-    );
-    res.status(200).json(completedTask);
+    const task = await TaskService.updateTask(req.body);
+    res.status(200).send(task);
   } catch (error) {
     next(error);
   }
 };
 
-const udpateTaskById = async (req, res) => {
-  try {
-    const task = await TaskService.updateTaskById(req.params.taskId, req.body);
-    res.status(200).json(task);
-  } catch (error) {
-    next(error);
-  }
-};
+// const getCompletedTasks = async (req, res) => {
+//   try {
+//     const tasks = await TaskService.getCompletedTasks(req.params.email);
+//     res.status(200).json(tasks);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
-const getCompletedTasks = async (req, res) => {
-  try {
-    const tasks = await TaskService.getCompletedTasks(req.params.email);
-    res.status(200).json(tasks);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getIncompleteTasks = async (req, res) => {
-  try {
-    const tasks = await TaskService.getIncompleteTasks(req.params.email);
-    res.status(200).json(tasks);
-  } catch (error) {
-    next(error);
-  }
-};
+// const getIncompleteTasks = async (req, res) => {
+//   try {
+//     const tasks = await TaskService.getIncompleteTasks(req.params.email);
+//     res.status(200).json(tasks);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 const deleteTask = async (req, res) => {
   try {
@@ -68,11 +86,12 @@ const deleteTask = async (req, res) => {
 };
 
 module.exports = {
-  addTask,
+  createTask,
   getAllTasks,
-  completeTask,
-  udpateTaskById,
-  getCompletedTasks,
-  getIncompleteTasks,
+  getTaskDetails,
+  //completeTask,
+  updateTask,
+  //getCompletedTasks,
+  //getIncompleteTasks,
   deleteTask,
 };
