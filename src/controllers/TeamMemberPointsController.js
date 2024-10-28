@@ -1,28 +1,9 @@
 const TeamMemberPointsService = require("../services/TeamMemberPointsService");
 
-const getTeamMemberPointsByEmail = async (req, res, next) => {
-  const { email } = req.params;
-
-  // Check if the email parameter is missing or invalid
-  if (!email || !email.includes("@")) {
-    return next(400, "Invalid or missing email parameter");
-  }
-
+const getTeamMemberPoints = async (req, res, next) => {
   try {
-    const teamMember =
-      await TeamMemberPointsService.getTeamMemeberPointsByEmail(email);
-    res.status(200).json(teamMember);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const addPoints = async (req, res) => {
-  try {
-    const teamMember = await TeamMemberPointsService.addPoints(
-      req.body.email,
-      req.body.pointsToAdd,
-      req.body.category
+    const teamMember = await TeamMemberPointsService.getTeamMemeberPoints(
+      req.query
     );
     res.status(200).json(teamMember);
   } catch (error) {
@@ -30,4 +11,13 @@ const addPoints = async (req, res) => {
   }
 };
 
-module.exports = { getTeamMemberPointsByEmail, addPoints };
+const addPoints = async (req, res, next) => {
+  try {
+    const teamMember = await TeamMemberPointsService.addPoints(req.body);
+    res.status(200).json(teamMember);
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = { getTeamMemberPoints, addPoints };

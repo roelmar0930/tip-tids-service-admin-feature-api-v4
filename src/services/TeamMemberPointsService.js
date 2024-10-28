@@ -2,43 +2,46 @@ const TeamMemberPoints = require("../models/TeamMemberPoints");
 const TeamMemberService = require("./TeamMemberService");
 
 class TeamMemberPointsService {
-  async getTeamMemeberPointsByEmail(email) {
+  async getTeamMemeberPoints(query) {
     try {
-      const teamMemberPoints = await TeamMemberPoints.find({ email });
-      if (teamMemberPoints.length > 0) {
-        return teamMemberPoints;
-      } else {
-        throw new Error("Team members not found");
-      }
+      const teamMemberPoints = await TeamMemberPoints.find(query);
+      return teamMemberPoints;
     } catch (error) {
       throw error;
     }
   }
 
-  async addPoints(email, points, category) {
+  async addPoints(body) {
     try {
+      const { teamMemberEmail, teamMemberWorkdayId, points, category } = body;
+
       const yearToday = new Date().getFullYear();
 
       // Find the team member point for the current year
       let currentYearPoints = await TeamMemberPoints.findOne({
-        email,
+        teamMemberEmail: teamMemberEmail,
+        teamMemberWorkdayId: teamMemberWorkdayId,
         year: yearToday,
       });
 
       // If no record is found, retrieve team member info and create a new record
       if (!currentYearPoints) {
-        const teamMemberInfo = await TeamMemberService.getTeamMemberInfoByEmail(
-          email
-        );
+        const teamMemberInfo = await TeamMemberService.getTeamMember({
+          workdayId: teamMemberWorkdayId,
+          workEmailAddress: teamMemberEmail,
+        });
 
         if (teamMemberInfo) {
           currentYearPoints = new TeamMemberPoints({
             year: yearToday,
-            workdayId: teamMemberInfo.workdayId,
-            employeeName: teamMemberInfo.employeeName,
-            email, // Ensure email is correctly used here
-            copPoints: 0,
+            teamMemberWorkdayId: teamMemberInfo.workdayId,
+            teamMemberEmail: teamMemberInfo.workEmailAddress,
             starPoints: 0,
+            starsPesoConversion: 0,
+            starsDeduction: 0,
+            copPoints: 0,
+            copPesoConversion: 0,
+            copDeduction: 0,
           });
           await currentYearPoints.save();
         } else {
@@ -46,7 +49,6 @@ class TeamMemberPointsService {
         }
       }
 
-      // Update the points based on category
       if (category === "COP") {
         currentYearPoints.copPoints =
           (currentYearPoints.copPoints || 0) + points;
@@ -57,6 +59,7 @@ class TeamMemberPointsService {
 
       // Save the updated record
       await currentYearPoints.save();
+      return { success: true, message: "Points added successfully" };
     } catch (error) {
       console.error("Error:", error);
     }

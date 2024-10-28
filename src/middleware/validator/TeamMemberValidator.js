@@ -62,14 +62,14 @@ const validateGetAllTeamMemberEventsQuery = [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { teamMemberWorkdayId, teamMemberEmail } = req.query;
+    const { teamMemberWorkdayId, teamMemberEmail, eventId } = req.query;
 
-    if (!teamMemberWorkdayId && !teamMemberEmail) {
+    if (!teamMemberWorkdayId && !teamMemberEmail && !eventId) {
       return res.status(400).json({
         errors: [
           {
             msg: "Either teamMemberWorkdayId or teamMemberEmail is required",
-            param: "teamMemberWorkdayId or teamMemberEmail",
+            param: "teamMemberWorkdayId or teamMemberEmail or eventId",
             location: "query",
           },
         ],
