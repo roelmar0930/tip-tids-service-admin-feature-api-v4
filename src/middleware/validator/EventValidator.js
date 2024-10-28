@@ -34,7 +34,7 @@ const validateGetAllEvents = [
 ];
 
 const validateGetEventDetails = [
-  query("")
+  query("id")
     .notEmpty()
     .withMessage("ID is required")
     .isInt()

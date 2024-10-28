@@ -5,7 +5,7 @@ const teamMemberPointsSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-  email: {
+  teamMemberEmail: {
     type: String,
     required: true,
   },

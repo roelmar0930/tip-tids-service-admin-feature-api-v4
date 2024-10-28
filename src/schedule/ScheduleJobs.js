@@ -1,76 +1,61 @@
-// const schedule = require("node-schedule");
-// const Event = require("../models/Event");
-// const Registration = require("../models/Registration");
-// const TeamMemberPointsService = require("../services/TeamMemberPointsService");
-// const EventsService = require("../services/EventsService");
-// const {
-//   formatDateToManilaUTC,
-//   formatDateToUTC,
-// } = require("../utils/DateUtils");
+const schedule = require("node-schedule");
+const Event = require("../models/Event");
+const addPointsForCompletedEvent = require("./addPointsForCompletedEvent");
+const {
+  formatDateToManilaUTC,
+  formatDateToUTC,
+} = require("../utils/DateUtils");
 
-// // Function to add points for completed events
-// async function addPointsForCompletedEvent(id) {
-//   try {
-//     // Retrieve the event details using id
-//     const event = await EventsService.getEventDetails(id);
-//     const registrations = await Registration.find({
-//       id,
-//       pointsAwarded: false,
-//     });
-//     const { category, pointsNum: points } = event[0];
+// Main scheduled job function
+module.exports = function ScheduleJobs() {
+  // Schedule to mark outdated events as completed
+  schedule.scheduleJob("*/5 * * * *", async () => {
+    const now = new Date();
+    try {
+      const outdatedEvents = await getOutdatedEvents(now);
 
-//     if (!event) {
-//       console.error(`Event details not found for event ID: ${id}`);
-//       return; // Exit if event not found
-//     }
+      for (const event of outdatedEvents) {
+        if (isEventCompleted(event, now)) {
+          event.isCompleted = true;
+          await event.save();
+          console.log(`Event ID ${event.id} is marked as completed.`);
+        }
+      }
 
-//     if (registrations.length === 0) {
-//       console.log(`No registrations found`);
-//       return;
-//     }
+      // Separate function to add points for all completed, active events
+      await awardPointsForCompletedEvents();
+    } catch (error) {
+      console.error("Failed to run the scheduled job:", error);
+    }
+  });
+};
 
-//     for (const registration of registrations) {
-//       // Add points to the user's record
-//       await TeamMemberPointsService.addPoints(
-//         registration.email,
-//         points,
-//         category
-//       );
+// Function to fetch outdated events, excluding archived ones
+async function getOutdatedEvents(now) {
+  return Event.find({
+    endDate: { $lt: formatDateToManilaUTC(now) },
+    isCompleted: false,
+    isArchived: false,
+  });
+}
 
-//       // Mark points as awarded in registration
-//       registration.pointsAwarded = true;
-//       await registration.save();
+// Helper to check if an event is ready to be marked as completed
+function isEventCompleted(event, now) {
+  const eventEndDateUTC = formatDateToUTC(new Date(event.endDate));
+  const endDateWithBuffer = new Date(eventEndDateUTC);
+  endDateWithBuffer.setHours(endDateWithBuffer.getHours() + 12);
+  return endDateWithBuffer <= now;
+}
 
-//       console.log(`Points awarded and saved for ${registration.email}`);
-//     }
-//   } catch (error) {
-//     console.error(`Failed to process event ${id}:`, error);
-//   }
-// }
+// Function to add points for all completed events with "Active" status
+async function awardPointsForCompletedEvents() {
+  const completedActiveEvents = await Event.find({
+    isCompleted: true,
+    status: "active",
+  });
 
-// // Scheduled job
-// module.exports = function ScheduleJobs() {
-//   schedule.scheduleJob("*/1 * * * *", async () => {
-//     const now = new Date();
-//     const outdatedEvents = await Event.find({
-//       endDate: { $lt: formatDateToManilaUTC(now) },
-//       status: { $nin: ["Completed", "Archived"] },
-//     });
-
-//     for (const event of outdatedEvents) {
-//       const eventEndDate = new Date(event.endDate); // Create a new Date object for manipulation
-//       const eventEndDateUTC = formatDateToUTC(eventEndDate);
-//       const endDateWithBuffer = new Date(eventEndDateUTC);
-//       endDateWithBuffer.setHours(endDateWithBuffer.getHours() + 12);
-
-//       if (endDateWithBuffer <= now) {
-//         event.status = "Completed";
-//         await event.save();
-//         console.log("Event ID " + event.id + " is Completed");
-
-//         // Add points to users for this event
-//         await addPointsForCompletedEvent(event.id);
-//       }
-//     }
-//   });
-// };
+  for (const event of completedActiveEvents) {
+    await addPointsForCompletedEvent(event.id);
+    console.log(`Points awarded for completed active event ID: ${event.id}`);
+  }
+}

@@ -39,6 +39,7 @@ class TeamMemberService {
       const eventExistInTeamMember = await TeamMemberEvent.findOne({
         eventId: event.id,
         teamMemberWorkdayId: eventBody.teamMemberWorkdayId,
+        teamMemberEmail: eventBody.teamMemberEmail,
       });
 
       if (eventExistInTeamMember) {
@@ -85,7 +86,7 @@ class TeamMemberService {
       teamMemberEvent.set(eventBody);
 
       await teamMemberEvent.save();
-      console.log("Team member event created:", teamMemberEvent);
+      console.log("Team member event updated:", teamMemberEvent);
 
       return teamMemberEvent;
     } catch (error) {
@@ -95,9 +96,23 @@ class TeamMemberService {
 
   async getEvents(query) {
     try {
-      const teamMemberEvent = await TeamMemberEvent.find(query);
+      const teamMemberEvents = await TeamMemberEvent.find(query);
 
-      return teamMemberEvent;
+      const events = await Promise.all(
+        teamMemberEvents.map(async (teamMemberEvent) => {
+          const request = { id: teamMemberEvent.eventId };
+          const event = await EventsService.getEventDetails(request);
+
+          const cleanedEvent = {
+            eventStatus: event.status,
+            ...teamMemberEvent._doc,
+          };
+
+          return cleanedEvent;
+        })
+      );
+
+      return events;
     } catch (error) {
       throw error;
     }
@@ -114,7 +129,11 @@ class TeamMemberService {
 
           const cleanedEvent = {
             ...event._doc,
-            teamMemberRegistrationStatus: teamMemberEvent.status,
+            registrationStatus: teamMemberEvent.status,
+            isPointsAwarded: teamMemberEvent.isPointsAwarded,
+            isSurveyDone: teamMemberEvent.isSurveyDone,
+            teamMemberEmail: teamMemberEvent.teamMemberEmail,
+            teamMemberWorkdayId: teamMemberEvent.teamMemberWorkdayId,
           };
 
           return cleanedEvent;

@@ -1,6 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const TeamMemberController = require("../controllers/TeamMemberController");
+const TeamMemberPointsController = require("../controllers/TeamMemberPointsController");
+
 const {
   validateGetTeamMemberEventsQuery,
   validateGetAllTeamMemberEventsQuery,
@@ -12,7 +14,9 @@ router.get("/getTeamMember", TeamMemberController.getTeamMember);
 
 router.post("/addEvent", TeamMemberController.addEvent);
 
-router.post("/updateEvent", TeamMemberController.updateEvent);
+router.patch("/updateEvent", TeamMemberController.updateEvent);
+
+router.get("/getPoints", TeamMemberPointsController.getTeamMemberPoints);
 
 router.get(
   "/getEvents",
