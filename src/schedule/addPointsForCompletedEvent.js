@@ -11,7 +11,7 @@ async function addPointsForCompletedEvent(eventId) {
       return;
     }
 
-    const { category, pointsNum: points } = event[0];
+    const { category, pointsNum: points } = event;
 
     const teamMemeberEvents = await getTeamMemberEvent(eventId);
 

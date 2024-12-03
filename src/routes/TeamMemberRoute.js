@@ -18,16 +18,4 @@ router.patch("/updateEvent", TeamMemberController.updateEvent);
 
 router.get("/getPoints", TeamMemberPointsController.getTeamMemberPoints);
 
-router.get(
-  "/getEvents",
-  validateGetTeamMemberEventsQuery,
-  TeamMemberController.getEvents
-);
-
-router.get(
-  "/getAllEventDetails",
-  validateGetAllTeamMemberEventsQuery,
-  TeamMemberController.getAllEventDetails
-);
-
 module.exports = router;

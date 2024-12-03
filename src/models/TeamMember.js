@@ -45,6 +45,10 @@ const teamMemberSchema = new mongoose.Schema({
   },
   role: {
     type: String,
+    default: "teamMember", // Default to 'teamMember'
+  },
+  tidsPractice: {
+    type: String,
   },
   createdAt: {
     type: Date,
@@ -54,6 +58,23 @@ const teamMemberSchema = new mongoose.Schema({
     type: Date,
   },
 });
+
+// Pre-save hook to set 'role' dynamically based on 'jobProfile'
+teamMemberSchema.pre("save", function (next) {
+  if (this.jobProfile) {
+    const jobProfileLower = this.jobProfile.toLowerCase();
+
+    if (jobProfileLower.includes("manage")) {
+      this.role = "teamManager";
+    } else if (jobProfileLower.includes("leader")) {
+      this.role = "teamLeader";
+    } else {
+      this.role = "teamMember";
+    }
+  }
+  next();
+});
+
 
 teamMemberSchema.set("toJSON", {
   transform: (doc, ret, options) => {

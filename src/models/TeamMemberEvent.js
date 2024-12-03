@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { formatDateToManilaUTC } = require("../utils/DateUtils");
 
 const teamMemberEventSchema = new mongoose.Schema({
   eventId: {
@@ -30,6 +31,10 @@ const teamMemberEventSchema = new mongoose.Schema({
   address: {
     type: String,
   },
+  invitedDate: {
+    type: Date,
+    default: formatDateToManilaUTC(new Date()),
+  }
 });
 
 teamMemberEventSchema.set("toJSON", {

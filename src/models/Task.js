@@ -4,7 +4,6 @@ const { formatDateToManilaUTC } = require("../utils/DateUtils");
 const taskSchema = new mongoose.Schema({
   id: {
     type: Number,
-    required: true,
     unique: true,
   },
   title: {
@@ -22,6 +21,7 @@ const taskSchema = new mongoose.Schema({
   status: {
     type: String,
     required: true,
+    default: "inactive",
   },
   dueDate: {
     type: Date,
@@ -69,7 +69,7 @@ taskSchema.pre("save", async function (next) {
   const doc = this;
   if (doc.isNew) {
     const lastId = await Task.findOne({}, {}, { sort: { id: -1 } });
-    const nextId = lastId ? lastId.id + 1 : 10000000;
+    const nextId = lastId ? lastId.id + 1 : 1;
     doc.id = nextId;
   }
   next();

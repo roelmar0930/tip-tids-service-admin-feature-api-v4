@@ -18,7 +18,6 @@ const ImageRoute = require("./routes/ImageRoute");
 const TeamMemberPointsRouter = require("./routes/TeamMemberPointsRoute");
 const TeamMemberRouter = require("./routes/TeamMemberRoute");
 const ScheduleJobs = require("./schedule/ScheduleJobs");
-// const ScheduleJobs = require("./schedule/ScheduleJobs");
 
 const app = express();
 
