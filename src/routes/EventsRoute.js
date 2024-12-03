@@ -5,18 +5,13 @@ const upload = require("../middleware/UploadMiddleware");
 const {
   validateGetEventDetails,
   validateGetAllEvents,
+  validateInvitedTeamMembersQuery,
 } = require("../middleware/validator/EventValidator");
 
 router.get(
-  "/getAllEvents",
+  "/",
   validateGetAllEvents,
   eventsController.getAllEvents
-);
-
-router.get(
-  "/getEventDetails",
-  validateGetEventDetails,
-  eventsController.getEventDetails
 );
 
 router.post(
@@ -31,6 +26,16 @@ router.patch(
   eventsController.updateEvent
 );
 
-router.put("/deleteEvent/:", eventsController.deleteEvent);
+router.put("/deleteEvent/:id", eventsController.deleteEvent);
+
+router.post("/inviteTeamMember", eventsController.inviteTeamMember);
+
+router.patch("/updateInvitedTeamMember", eventsController.updateInviteTeamMember);
+
+router.get(
+  "/invitedTeamMembers",
+  validateInvitedTeamMembersQuery,
+  eventsController.invitedTeamMembers
+);
 
 module.exports = router;

@@ -1,47 +1,17 @@
 const Event = require("../models/Event");
+const TeamMemberEvent = require("../models/TeamMemberEvent");
 const ImageService = require("../services/ImageService");
 const createHttpError = require("http-errors");
 
+const TeamMemberService= require("../services/TeamMemberService");
+
 class EventsService {
   async getAllEvents(query) {
-    const events = await Event.find(query);
-    return events;
-  }
-
-  async getEventDetailsByDate(eventBody) {
-    const targetDate = new Date(eventBody.startDate);
-    const startDate = new Date(
-      targetDate.getFullYear(),
-      targetDate.getMonth(),
-      targetDate.getDate()
-    );
-    const endDate = new Date(
-      targetDate.getFullYear(),
-      targetDate.getMonth(),
-      targetDate.getDate() + 1
-    );
-    const details = await Event.find({
-      startDate: {
-        $gte: startDate,
-        $lt: endDate,
-      },
-      status: "Completed",
-    });
-    return details;
-  }
-
-  async getEventDetails(query) {
-    try {
-      const eventDetails = await Event.findOne(query);
-
-      if (!eventDetails) {
-        throw new createHttpError(404, "Event not found");
-      }
-
-      return eventDetails;
-    } catch (error) {
-      throw error;
+    if (query && Object.keys(query).length === 1 && query.id) {
+      return Event.findOne(query);
     }
+  
+    return Event.find(query);
   }
 
   async createEvent(eventData, imageFile) {
@@ -136,6 +106,137 @@ class EventsService {
     });
     return event;
   }
+
+  async inviteTeamMember(query, eventBody) {
+    try {
+      const event = await Event.findOne({ id: query.eventId });
+
+      if (!event) {
+        throw new createHttpError(409, "Event not found");
+      }
+
+      const eventExistInTeamMember = await TeamMemberEvent.findOne({
+        eventId: event.id,
+        teamMemberWorkdayId: eventBody.teamMemberWorkdayId,
+        teamMemberEmail: eventBody.teamMemberEmail,
+      });
+
+      if (eventExistInTeamMember) {
+        throw new createHttpError(
+          409,
+          "Team member already has this event assigned"
+        );
+      }
+
+      const teamMemberEvent = new TeamMemberEvent({
+        ...eventBody,
+        eventId: event.id,
+      });
+
+      await teamMemberEvent.save();
+      console.log("Team member event created:", teamMemberEvent);
+
+      return teamMemberEvent;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateInvitedTeamMember(query, eventBody) {
+    try {
+      const event = await Event.findOne({ id: query.eventId });
+
+      if (!event) {
+        throw new createHttpError(409, "Event not found");
+      }
+
+      const teamMemberEvent = await TeamMemberEvent.findOne({
+        eventId: event.id,
+        ...query,
+      });
+
+      if (!teamMemberEvent) {
+        throw new createHttpError(409, "Team member event not found");
+      }
+
+      teamMemberEvent.set(eventBody);
+
+      await teamMemberEvent.save();
+      console.log("Team member event updated:", teamMemberEvent);
+
+      return teamMemberEvent;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async invitedTeamMembers(query) {
+    try {
+      const { eventDetailsInd, teamMemberDetails, ...queryWithoutEventDetailsInd } = query;
+  
+      // Fetch all team member events based on the query
+      const teamMemberEvents = await TeamMemberEvent.find(queryWithoutEventDetailsInd);
+  
+      // Exit early if no team member events are found
+      if (!teamMemberEvents.length) {
+        return [];
+      }
+  
+      // Fetch and clean up event details
+      const events = await Promise.all(
+        teamMemberEvents.map(async (teamMemberEvent) => {
+          try {
+            // Fetch event details only if eventDetailsInd is 'true'
+            const event = 
+              eventDetailsInd === 'true'
+                ? await this.getAllEvents({ id: teamMemberEvent.eventId })
+                : null;
+  
+            // Fetch team member details only if teamMemberDetails is 'true'
+            const teamMember =
+              teamMemberDetails === 'true'
+                ? await TeamMemberService.getTeamMember({
+                    workdayId: teamMemberEvent.teamMemberWorkdayId,
+                  })
+                : null;
+  
+            // Ensure event data is valid
+            if (!event && eventDetailsInd === 'true') {
+              console.warn(`Event not found for ID: ${teamMemberEvent.eventId}`);
+              return null; // Skip processing if event is missing and eventDetailsInd is true
+            }
+  
+            const { status, ...eventWithoutStatus } = event ? event._doc : {};
+  
+            // Construct the cleaned event object
+            const cleanedEvent = {
+              ...teamMemberEvent._doc,
+              ...(eventDetailsInd === 'true' && { ...eventWithoutStatus }), // Include event details without 'status'
+              ...(teamMember && teamMemberDetails === 'true' && { ...teamMember._doc }), // Include team member details if available
+              eventStatus: event ? event.status : null, // Always include event status if event exists
+            };
+  
+            return cleanedEvent;
+          } catch (innerError) {
+            console.error(
+              `Error processing team member event ID: ${teamMemberEvent._id}`,
+              innerError
+            );
+            return null; // Return null for individual errors but continue processing
+          }
+        })
+      );
+  
+      // Filter out any null values from failed individual fetches
+      return events.filter(Boolean);
+    } catch (error) {
+      console.error('Error fetching invited team members:', error);
+      throw error; // Re-throw to let the caller handle the error
+    }
+  }
+  
 }
+  
+
 
 module.exports = new EventsService();

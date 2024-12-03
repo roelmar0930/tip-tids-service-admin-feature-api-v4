@@ -9,15 +9,6 @@ const getAllEvents = async (req, res, next) => {
   }
 };
 
-const getEventDetails = async (req, res, next) => {
-  try {
-    const details = await EventsService.getEventDetails(req.query);
-    res.status(200).json(details);
-  } catch (error) {
-    next(error);
-  }
-};
-
 const createEvent = async (req, res, next) => {
   const eventData = req.body;
   const imageFile = req.file;
@@ -49,10 +40,46 @@ const deleteEvent = async (req, res, next) => {
   }
 };
 
+const inviteTeamMember = async (req, res, next) => {
+  try {
+    const teamMemberEvent = await EventsService.inviteTeamMember(
+      req.query,
+      req.body
+    );
+    res.status(200).json(teamMemberEvent);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateInviteTeamMember = async (req, res, next) => {
+  try {
+    const teamMemberEvent = await EventsService.updateInvitedTeamMember(
+      req.query,
+      req.body
+    );
+    res.status(200).json(teamMemberEvent);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const invitedTeamMembers = async (req, res, next) => {
+  try {
+    const teamMemberEvent = await EventsService.invitedTeamMembers(req.query);
+    res.status(200).json(teamMemberEvent);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 module.exports = {
   getAllEvents,
-  getEventDetails,
   createEvent,
   updateEvent,
   deleteEvent,
+  inviteTeamMember,
+  updateInviteTeamMember,
+  invitedTeamMembers
 };

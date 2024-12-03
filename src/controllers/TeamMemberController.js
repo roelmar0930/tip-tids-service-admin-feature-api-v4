@@ -1,8 +1,8 @@
 const TeamMemberService = require("../services/TeamMemberService");
 
-const getAllTeamMember = async (req, res) => {
+const getAllTeamMember = async (req, res, next) => {
   try {
-    const teamMembers = await TeamMemberService.getAllTeamMember();
+    const teamMembers = await TeamMemberService.getAllTeamMember(req.query);
     res.status(200).json(teamMembers);
   } catch (error) {
     next(error);
@@ -42,31 +42,9 @@ const updateEvent = async (req, res, next) => {
   }
 };
 
-const getEvents = async (req, res, next) => {
-  try {
-    const teamMemberEvent = await TeamMemberService.getEvents(req.query);
-    res.status(200).json(teamMemberEvent);
-  } catch (error) {
-    next(error);
-  }
-};
-
-const getAllEventDetails = async (req, res, next) => {
-  try {
-    const teamMemberEvent = await TeamMemberService.getAllEventDetails(
-      req.query
-    );
-    res.status(200).json(teamMemberEvent);
-  } catch (error) {
-    next(error);
-  }
-};
-
 module.exports = {
   getAllTeamMember,
   getTeamMember,
   addEvent,
   updateEvent,
-  getEvents,
-  getAllEventDetails,
 };

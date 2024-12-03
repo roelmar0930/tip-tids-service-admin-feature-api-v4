@@ -4,9 +4,9 @@ const EventsService = require("./EventsService");
 const createHttpError = require("http-errors");
 
 class TeamMemberService {
-  async getAllTeamMember() {
+  async getAllTeamMember(query) {
     try {
-      const teamMembers = await TeamMember.find();
+      const teamMembers = await TeamMember.find(query);
       if (teamMembers.length > 0) {
         return teamMembers;
       } else {
@@ -90,59 +90,6 @@ class TeamMemberService {
 
       return teamMemberEvent;
     } catch (error) {
-      throw error;
-    }
-  }
-
-  async getEvents(query) {
-    try {
-      const teamMemberEvents = await TeamMemberEvent.find(query);
-
-      const events = await Promise.all(
-        teamMemberEvents.map(async (teamMemberEvent) => {
-          const request = { id: teamMemberEvent.eventId };
-          const event = await EventsService.getEventDetails(request);
-
-          const cleanedEvent = {
-            eventStatus: event.status,
-            ...teamMemberEvent._doc,
-          };
-
-          return cleanedEvent;
-        })
-      );
-
-      return events;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async getAllEventDetails(query) {
-    try {
-      const teamMemberEvents = await TeamMemberEvent.find(query);
-
-      const events = await Promise.all(
-        teamMemberEvents.map(async (teamMemberEvent) => {
-          const request = { id: teamMemberEvent.eventId };
-          const event = await EventsService.getEventDetails(request);
-
-          const cleanedEvent = {
-            ...event._doc,
-            registrationStatus: teamMemberEvent.status,
-            isPointsAwarded: teamMemberEvent.isPointsAwarded,
-            isSurveyDone: teamMemberEvent.isSurveyDone,
-            teamMemberEmail: teamMemberEvent.teamMemberEmail,
-            teamMemberWorkdayId: teamMemberEvent.teamMemberWorkdayId,
-          };
-
-          return cleanedEvent;
-        })
-      );
-
-      return events;
-    } catch (error) {
-      console.error("Error fetching event details:", error);
       throw error;
     }
   }

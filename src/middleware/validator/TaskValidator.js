@@ -37,21 +37,6 @@ const validateGetAllTasks = [
   },
 ];
 
-const validateGetTaskDetails = [
-  query("")
-    .notEmpty()
-    .withMessage("ID is required")
-    .isInt()
-    .withMessage("ID must be a number"),
-  (req, res, next) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-    next();
-  },
-];
-
 // Validation rules for URL parameters (e.g., task ID)
 const validateTaskParams = [
   param("").isInt().withMessage("ID must be an integer"),
@@ -66,6 +51,5 @@ const validateTaskParams = [
 
 module.exports = {
   validateGetAllTasks,
-  validateGetTaskDetails,
   validateTaskParams,
 };
