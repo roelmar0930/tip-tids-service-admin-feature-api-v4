@@ -1,33 +1,45 @@
-const config = require("./config/config");
 const mongoose = require("mongoose");
+const getConfig = require("./config/config"); // Import the async config function
 
-mongoose.connect(config.databaseUri, {
-  useNewUrlParser: true,
-  useCreateIndex: true,
-  useUnifiedTopology: true,
-});
+async function initializeDatabase() {
+  try {
+    // Get the configuration which includes the database URI
+    const config = await getConfig();
+    const databaseUri = config.databaseUri;
 
-mongoose.connection.on("connected", () => {
-  console.log("MONGOOSE: connected");
-  console.log("Collections:");
-  mongoose.connection.db.listCollections().toArray((err, names) => {
-    if (err) {
-      console.log(err);
-    } else {
-      names.forEach((e, i, a) => {
-        console.log("-->", e.name);
-      });
-    }
-  });
-});
+    // Connect to MongoDB using Mongoose
+    await mongoose.connect(databaseUri, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
 
+    console.log("MONGOOSE: connected");
+    console.log("Collections:");
+    mongoose.connection.db.listCollections().toArray((err, names) => {
+      if (err) {
+        console.log("Error listing collections:", err);
+      } else {
+        names.forEach((e) => {
+          console.log("-->", e.name); // Log the collection names
+        });
+      }
+    });
+
+  } catch (error) {
+    console.error("Error during database initialization:", error.message);
+    process.exit(1); // Exit if database connection fails
+  }
+}
+
+// Call the initialization function to connect to the database
+initializeDatabase();
+
+// Event listener for connection closed
 mongoose.connection.on("close", () => {
-  console.log("MONGOOSE: connection close");
+  console.log("MONGOOSE: connection closed");
 });
 
-mongoose.connection.on("error", (error) => {
-  console.log("MONGOOSE: connection error", error);
-});
+// Event listener for connection errors
 mongoose.connection.on("error", (error) => {
   console.log("MONGOOSE: connection error", error);
 });

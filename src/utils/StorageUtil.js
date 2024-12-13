@@ -1,4 +1,3 @@
-require("dotenv").config();
 const { Storage } = require("@google-cloud/storage");
 const path = require("path");
 
@@ -9,6 +8,6 @@ const storage = new Storage({
   keyFilename: keyFilePath,
 });
 
-const bucket = storage.bucket(process.env.BUCKET_NAME);
+const bucket = storage.bucket("engagement-app-storage-v4");
 
 module.exports = { storage, bucket };

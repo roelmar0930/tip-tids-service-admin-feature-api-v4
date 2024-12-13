@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
+const dotenv = require('dotenv');
+dotenv.config();
+
 /**
  * Module dependencies.
  */
-
 const app = require("../src/app");
 const debug = require("debug")("admin-feature:server");
 const http = require("http");
@@ -11,38 +13,37 @@ const http = require("http");
 /**
  * Get port from environment and store in Express.
  */
-
 const port = normalizePort(process.env.PORT || "8080");
 app.set("port", port);
 
 /**
  * Create HTTP server.
  */
-
 const server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
  */
-
 server.listen(port);
 server.on("error", onError);
 server.on("listening", onListening);
 
 /**
  * Normalize a port into a number, string, or false.
+ *
+ * @param {string} val - The port value from environment or default.
+ * @returns {number|string|false} - Returns normalized port or false if invalid.
  */
-
 function normalizePort(val) {
   const port = parseInt(val, 10);
 
   if (isNaN(port)) {
-    // named pipe
+    // Named pipe
     return val;
   }
 
   if (port >= 0) {
-    // port number
+    // Port number
     return port;
   }
 
@@ -51,8 +52,9 @@ function normalizePort(val) {
 
 /**
  * Event listener for HTTP server "error" event.
+ *
+ * @param {Error} error - The error object.
  */
-
 function onError(error) {
   if (error.syscall !== "listen") {
     throw error;
@@ -60,7 +62,7 @@ function onError(error) {
 
   const bind = typeof port === "string" ? `Pipe ${port}` : `Port ${port}`;
 
-  // handle specific listen errors with friendly messages
+  // Handle specific listen errors with friendly messages
   switch (error.code) {
     case "EACCES":
       console.error(`${bind} requires elevated privileges`);
@@ -78,10 +80,33 @@ function onError(error) {
 /**
  * Event listener for HTTP server "listening" event.
  */
-
 function onListening() {
   const addr = server.address();
   const bind = typeof addr === "string" ? `pipe ${addr}` : `port ${addr.port}`;
-  console.info(`Listening on ${bind}`);
   debug(`Listening on ${bind}`);
+  console.info(`Listening on ${bind}`);
 }
+
+/**
+ * Handle uncaught exceptions and unhandled rejections.
+ */
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught Exception:", err);
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  process.exit(1);
+});
+
+/**
+ * Graceful shutdown on process termination.
+ */
+process.on("SIGINT", () => {
+  console.info("Received SIGINT. Shutting down gracefully...");
+  server.close(() => {
+    console.info("Server closed.");
+    process.exit(0);
+  });
+});
