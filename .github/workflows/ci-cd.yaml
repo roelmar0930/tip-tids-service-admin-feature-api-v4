@@ -92,7 +92,8 @@ jobs:
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --allow-unauthenticated
-
+            --service-account ${{ secrets.SERVICE_ACCOUNT }}
+            
       - name: Notify team on Google Chat
         if: success()
         env:
