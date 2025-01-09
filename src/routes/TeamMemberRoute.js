@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const TeamMemberController = require("../controllers/TeamMemberController");
 const TeamMemberPointsController = require("../controllers/TeamMemberPointsController");
+const jwtAuthenticator = require('../utils/JWTAuthenticator');
 
 const {
   validateGetTeamMemberEventsQuery,

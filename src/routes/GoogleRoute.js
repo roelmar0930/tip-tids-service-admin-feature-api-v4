@@ -2,10 +2,13 @@ const express = require("express");
 const { google } = require("googleapis");
 const creds = require("../creds.json");
 const cookieParser = require("cookie-parser");
+const jwt = require('jsonwebtoken');
 
 const app = express();
 const router = express.Router();
 app.use(cookieParser());
+
+
 
 const oauth2Client = new google.auth.OAuth2(
   creds.web.client_id,
@@ -44,14 +47,33 @@ router.get("/redirect", async (req, res) => {
 
   try {
     const { tokens } = await oauth2Client.getToken(authDetails);
+    oauth2Client.setCredentials(tokens);
     const { access_token, refresh_token } = tokens;
 
-    res.json({ access_token, refresh_token });
+    const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
+    const userInfo = await oauth2.userinfo.get();
+    const { name, email } = userInfo.data;
+
+    // Generate JWT with user data
+    const jwt_token = generateJWT({name, email);
+
+    res.json({ access_token, refresh_token, jwtToken });
+    console.log("JWT Token:", { access_token, refresh_token, jwt_token });
+
+    //res.json({ access_token, refresh_token });
   } catch (error) {
     console.error("Error getting tokens:", error);
     res.status(500).send("Error during authentication");
   }
 });
+
+// Function to generate JWT from user info
+function generateJWT(payload) {
+  const secretKey = creds.web.client_secret || 'your_secret_key'; // Use a secret key from .env
+  const options = { expiresIn: '1h' }; // JWT expiration time
+
+  return jwt.sign(payload, secretKey, options);
+}
 
 router.post("/getUserInfo", (req, res) => {
   oauth2Client.setCredentials(req.body);

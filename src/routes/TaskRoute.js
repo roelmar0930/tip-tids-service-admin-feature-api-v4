@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
 const taskController = require("../controllers/TaskController");
+const jwtAuthenticator = require('../utils/JWTAuthenticator');
 const {
   validateGetAllTasks,
 } = require("../middleware/validator/TaskValidator");
 
 router.get(
-    "/", 
+    "/",
     validateGetAllTasks, 
     taskController.getAllTasks
 );
