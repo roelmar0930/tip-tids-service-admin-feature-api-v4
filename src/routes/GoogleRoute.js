@@ -55,7 +55,7 @@ router.get("/redirect", async (req, res) => {
     const { name, email } = userInfo.data;
 
     // Generate JWT with user data
-    const jwt_token = generateJWT({name, email);
+    const jwt_token = generateJWT({name, email});
 
     res.json({ access_token, refresh_token, jwtToken });
     console.log("JWT Token:", { access_token, refresh_token, jwt_token });

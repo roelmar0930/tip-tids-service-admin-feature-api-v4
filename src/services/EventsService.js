@@ -2,6 +2,7 @@ const Event = require("../models/Event");
 const TeamMemberEvent = require("../models/TeamMemberEvent");
 const ImageService = require("../services/ImageService");
 const createHttpError = require("http-errors");
+const logger = require("../utils/Logger");
 
 const TeamMemberService= require("../services/TeamMemberService");
 
@@ -47,9 +48,11 @@ class EventsService {
 
       // Save the event
       await event.save();
+      logger.info("Event created:", event);
       console.log("Event created:", event);
       return event;
     } catch (error) {
+      logger.error("Error creating event:" + error.message);
       console.log("Error creating event:", error.message);
       throw error;
     }
@@ -60,6 +63,7 @@ class EventsService {
       const event = await Event.findOne({ id: updatedDetails.id });
 
       if (!event) {
+        logger.error("404 Event not found");
         throw new createHttpError(404, "Event not found");
       }
 
@@ -122,6 +126,7 @@ class EventsService {
       });
 
       if (eventExistInTeamMember) {
+        logger.error("409 Team member already has this event assigned");
         throw new createHttpError(
           409,
           "Team member already has this event assigned"
@@ -134,6 +139,7 @@ class EventsService {
       });
 
       await teamMemberEvent.save();
+      logger.info("Team member event created:" + teamMemberEvent);
       console.log("Team member event created:", teamMemberEvent);
 
       return teamMemberEvent;
@@ -147,6 +153,7 @@ class EventsService {
       const event = await Event.findOne({ id: query.eventId });
 
       if (!event) {
+        logger.error("409 Event not found");
         throw new createHttpError(409, "Event not found");
       }
 
@@ -156,12 +163,14 @@ class EventsService {
       });
 
       if (!teamMemberEvent) {
+        logger.error("409 Team member event not found");
         throw new createHttpError(409, "Team member event not found");
       }
 
       teamMemberEvent.set(eventBody);
 
       await teamMemberEvent.save();
+      logger.info("Team member event updated:" + teamMemberEvent);
       console.log("Team member event updated:", teamMemberEvent);
 
       return teamMemberEvent;
@@ -230,6 +239,7 @@ class EventsService {
       // Filter out any null values from failed individual fetches
       return events.filter(Boolean);
     } catch (error) {
+      logger.error('Error fetching invited team members:' + error);
       console.error('Error fetching invited team members:', error);
       throw error; // Re-throw to let the caller handle the error
     }

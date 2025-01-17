@@ -1,5 +1,6 @@
 const TeamMemberPoints = require("../models/TeamMemberPoints");
 const TeamMemberService = require("./TeamMemberService");
+const logger = require("../utils/Logger");
 
 class TeamMemberPointsService {
   async getTeamMemeberPoints(query) {
@@ -45,6 +46,7 @@ class TeamMemberPointsService {
           });
           await currentYearPoints.save();
         } else {
+          logger.error("Team member not found in roster");
           throw new Error("Team member not found in roster");
         }
       }
@@ -59,8 +61,10 @@ class TeamMemberPointsService {
 
       // Save the updated record
       await currentYearPoints.save();
+      logger.info("Points added successfully");
       return { success: true, message: "Points added successfully" };
     } catch (error) {
+      logger.error("Error : " + error);
       console.error("Error:", error);
     }
   }

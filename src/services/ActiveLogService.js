@@ -1,5 +1,6 @@
 const ActiveLog = require("../models/ActiveLog");
 const createHttpError = require("http-errors");
+const logger = require("../utils/Logger");
 
 class ActiveLogService {
   // Create a new activity log
@@ -9,6 +10,7 @@ class ActiveLogService {
       await log.save();
       return log;
     } catch (error) {
+      logger.error("Error creating log: " + error.message);
       throw createHttpError(500, "Error creating log: " + error.message);
     }
   }
@@ -19,6 +21,7 @@ class ActiveLogService {
       const logs = await ActiveLog.find().sort({ timestamp: -1 });
       return logs;
     } catch (error) {
+      logger.error("Error fetching logs: " + error.message);
       throw createHttpError(500, "Error fetching logs: " + error.message);
     }
   }
@@ -29,6 +32,7 @@ class ActiveLogService {
       const logs = await ActiveLog.find({ resource }).sort({ timestamp: -1 });
       return logs;
     } catch (error) {
+      logger.error("Error fetching logs: " + error.message);
       throw createHttpError(500, "Error fetching logs: " + error.message);
     }
   }
@@ -41,6 +45,7 @@ class ActiveLogService {
       });
       return logs;
     } catch (error) {
+      logger.error("Error fetching logs: " + error.message);
       throw createHttpError(500, "Error fetching logs: " + error.message);
     }
   }
