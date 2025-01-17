@@ -2,6 +2,7 @@ const TeamMember = require("../models/TeamMember");
 const TeamMemberEvent = require("../models/TeamMemberEvent");
 const EventsService = require("./EventsService");
 const createHttpError = require("http-errors");
+const logger = require("../utils/Logger");
 
 class TeamMemberService {
   async getAllTeamMember(query) {
@@ -10,6 +11,7 @@ class TeamMemberService {
       if (teamMembers.length > 0) {
         return teamMembers;
       } else {
+        logger.error("Team members not found");
         throw new Error("Team members not found");
       }
     } catch (error) {
@@ -21,6 +23,7 @@ class TeamMemberService {
     try {
       const teamMember = await TeamMember.findOne(query);
       if (!teamMember) {
+        logger.error("m 404 Team member not found");
         throw new createHttpError(404, "Team member not found");
       }
       return teamMember;
@@ -43,6 +46,7 @@ class TeamMemberService {
       });
 
       if (eventExistInTeamMember) {
+        logger.error("409 Team member already has this event assigned");
         throw new createHttpError(
           409,
           "Team member already has this event assigned"
@@ -55,6 +59,7 @@ class TeamMemberService {
       });
 
       await teamMemberEvent.save();
+      logger.info("Team member event created:" + teamMemberEvent);
       console.log("Team member event created:", teamMemberEvent);
 
       return teamMemberEvent;
@@ -71,6 +76,7 @@ class TeamMemberService {
       const event = await EventsService.getEventDetails(request);
 
       if (!event) {
+        logger.error("409 Event not found");
         throw new createHttpError(409, "Event not found");
       }
 
@@ -80,12 +86,14 @@ class TeamMemberService {
       });
 
       if (!teamMemberEvent) {
+        logger.error("409 Team member event not found");
         throw new createHttpError(409, "Team member event not found");
       }
 
       teamMemberEvent.set(eventBody);
 
       await teamMemberEvent.save();
+      logger.info("Team member event updated:" + teamMemberEvent);
       console.log("Team member event updated:", teamMemberEvent);
 
       return teamMemberEvent;

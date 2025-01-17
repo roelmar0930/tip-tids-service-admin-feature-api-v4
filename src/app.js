@@ -2,7 +2,8 @@ const createError = require("http-errors");
 const express = require("express");
 const path = require("path");
 const cookieParser = require("cookie-parser");
-const logger = require("morgan");
+const morgan = require("morgan");
+const logger = require("./utils/Logger");
 const cors = require("cors");
 require("./database");
 
@@ -26,11 +27,19 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 
 app.use(cors());
-app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+// Set up Morgan for HTTP request logging
+// Morgan logs will be passed to Winston logger
+app.use(morgan('combined', {
+  stream: {
+    write: (message) => {
+      logger.info(message.trim());  // Use Winston's logger for HTTP logs
+    }
+  }
+}));
 
 app.use("/", IndexRouter);
 app.use("/google", GoogleRouter);
@@ -45,8 +54,10 @@ app.get("/status", (req, res) => {
   const isHealthy = true; // Example health check logic
 
   if (isHealthy) {
+    logger.info('Health check OK');
     res.status(200).json({ status: "ok" }); // Respond with HTTP 200 and a JSON indicating health
   } else {
+    logger.info('Health check FAILED');
     res.status(500).json({ status: "error" }); // Respond with HTTP 500 if not healthy
   }
 });
