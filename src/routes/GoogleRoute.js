@@ -47,6 +47,7 @@ router.get("/redirect", async (req, res) => {
 
   try {
     const { tokens } = await oauth2Client.getToken(authDetails);
+    console.log(tokens)
     oauth2Client.setCredentials(tokens);
     const { access_token, refresh_token } = tokens;
 
@@ -57,7 +58,7 @@ router.get("/redirect", async (req, res) => {
     // Generate JWT with user data
     const jwt_token = generateJWT({name, email});
 
-    res.json({ access_token, refresh_token, jwtToken });
+    res.json({ access_token, refresh_token, jwt_token });
     console.log("JWT Token:", { access_token, refresh_token, jwt_token });
 
     //res.json({ access_token, refresh_token });
