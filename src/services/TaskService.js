@@ -1,6 +1,7 @@
 const Task = require("../models/Task");
 const logger = require("../utils/Logger");
 const TeamMemberTask = require("../models/TeamMemberTask");
+const TeamMember = require("../models/TeamMember");
 const { formatDateToManilaUTC } = require("../utils/DateUtils");
 const createHttpError = require("http-errors");
 
@@ -40,6 +41,28 @@ class TaskService {
   }
 
   /**
+   * This is for auto assigning a task when created to all team members
+   * 
+   * @param {number} id - Object containing task details
+   * @returns {void} - will perform bulk insert
+   */  
+  async bulkAssignTeamMemberTask(id) {
+    const teamMembers = await TeamMember.find({});
+
+    let teamMemberTasks = [];
+
+    teamMembers.forEach((obj) => {
+      teamMemberTasks.push({
+        taskId: id,
+        teamMemberWorkdayId: obj.workdayId,
+        teamMemberEmail: obj.workEmailAddress
+      });
+    });
+
+    TeamMemberTask.insertMany(teamMemberTasks);
+  }
+
+  /**
    * Create a new task with the provided task data.
    * 
    * @param {Object} taskData - Object containing task details
@@ -53,8 +76,8 @@ class TaskService {
       console.log("Task created:", task);
       return task;
     } catch (error) {
-      logger.error("Error fetching task:" + error.message);
-      console.log("Error fetching task:", error.message);
+      logger.error("Error creating task:" + error.message);
+      console.log("Error creating task:", error.message);
       throw error;
     }
   }
