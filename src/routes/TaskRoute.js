@@ -6,7 +6,7 @@ const {
   validateGetAllTasks,
 } = require("../middleware/validator/TaskValidator");
 
-router.get(
+router.post(
     "/",
     taskController.getTasks
 );
