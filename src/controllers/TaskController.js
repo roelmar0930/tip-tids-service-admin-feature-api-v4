@@ -23,6 +23,8 @@ const createTask = async (req, res, next) => {
     const taskBody = req.body;
 
     const task = await TaskService.createTask(taskBody);
+    TaskService.bulkAssignTeamMemberTask(task.id);
+
     res.status(200).json(task);
   } catch (error) {
     next(error);
