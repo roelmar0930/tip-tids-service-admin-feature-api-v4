@@ -19,8 +19,10 @@ router.post("/assignTask", taskController.assignTask);
 
 router.patch("/updateAssignedTask", taskController.updateAssignedTask);
 
-router.post("/assignedTask", taskController.getAssignedTask);
+router.post("/assignedTask", taskController.getAssignedTaskWithFilter);
 
 router.put("/deleteTask/:taskId", taskController.deleteTask);
+
+router.get("/getAssignedTaskDetails", taskController.getAssignedTaskDetails);
 
 module.exports = router;

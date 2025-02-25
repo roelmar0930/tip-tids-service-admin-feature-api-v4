@@ -59,7 +59,7 @@ class TaskService {
       });
     });
 
-    TeamMemberTask.insertMany(teamMemberTasks);
+    await TeamMemberTask.insertMany(teamMemberTasks);
   }
 
   /**
@@ -73,11 +73,9 @@ class TaskService {
       const task = new Task({ ...taskData });
       await task.save();
       logger.info("Task created:" + task);
-      console.log("Task created:", task);
       return task;
     } catch (error) {
       logger.error("Error creating task:" + error.message);
-      console.log("Error creating task:", error.message);
       throw error;
     }
   }
@@ -248,6 +246,48 @@ class TaskService {
       throw error;
     }
 
+  }
+
+  /**
+   * Fetch detailed information about assigned tasks.
+   * 
+   * @param {Object} query - Query containing task and team member details
+   * @returns {Promise<Array<Object>>} - Array of detailed assigned task objects
+   */
+  async getAssignedTaskDetails(query) {
+    try {
+
+      const teamMemberTasks = await TeamMemberTask.find({
+        teamMemberWorkdayId: query.teamMemberWorkdayId,
+        teamMemberEmail: query.teamMemberEmail,
+      });
+
+      console.log("teamMemberTasks", teamMemberTasks);
+
+      if (!teamMemberTasks.length) {
+        return [];
+      }
+
+      const taskIds = teamMemberTasks.map(tmt => tmt.taskId);
+      const tasks = await Task.find({ id: { $in: taskIds } });
+
+      if (!tasks.length) {
+        return [];
+      }
+
+      return tasks.map(task => {
+        const teamMemberDetails = teamMemberTasks.find(tmt => tmt.taskId === task.id).toObject();
+        delete teamMemberDetails.taskId;
+        return {
+          ...task.toObject(),
+          ...teamMemberDetails
+        };
+      });
+    } catch (error) {
+      logger.error("Error fetching assigned task details: " + error.message);
+      console.log("Error fetching assigned task details: ", error.message);
+      throw error;
+    }
   }
 }
 
