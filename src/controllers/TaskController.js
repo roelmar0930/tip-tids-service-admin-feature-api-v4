@@ -23,8 +23,7 @@ const createTask = async (req, res, next) => {
     const taskBody = req.body;
 
     const task = await TaskService.createTask(taskBody);
-    TaskService.bulkAssignTeamMemberTask(task.id);
-
+    await TaskService.bulkAssignTeamMemberTask(task.id);
     res.status(200).json(task);
   } catch (error) {
     next(error);
@@ -73,7 +72,7 @@ const updateAssignedTask = async (req, res, next) => {
   }
 };
 
-const getAssignedTask = async (req, res, next) => {
+const getAssignedTaskWithFilter = async (req, res, next) => {
   try {
     const filters = req.body || {}; 
 
@@ -87,6 +86,19 @@ const getAssignedTask = async (req, res, next) => {
   }
 };
 
+const getAssignedTaskDetails = async (req, res) => {
+  try {
+    const query = {
+      teamMemberEmail: req.query.teamMemberEmail,
+      teamMemberWorkdayId: req.query.teamMemberWorkdayId
+    };
+    const taskDetails = await TaskService.getAssignedTaskDetails(query);
+    res.status(200).json(taskDetails);
+  } catch (error) {
+    res.status(error.status || 500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createTask,
   getTasks,
@@ -94,5 +106,6 @@ module.exports = {
   deleteTask,
   assignTask,
   updateAssignedTask,
-  getAssignedTask
+  getAssignedTaskWithFilter,
+  getAssignedTaskDetails
 };
