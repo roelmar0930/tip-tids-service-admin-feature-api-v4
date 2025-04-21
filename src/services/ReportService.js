@@ -137,7 +137,8 @@ class ReportService {
           eventStatus: teamMemberEventMap[tm.workdayId].status,
           isPointsAwarded: teamMemberEventMap[tm.workdayId].isPointsAwarded,
           isSurveyDone: teamMemberEventMap[tm.workdayId].isSurveyDone,
-          invitedDate: teamMemberEventMap[tm.workdayId].invitedDate
+          invitedDate: teamMemberEventMap[tm.workdayId].invitedDate,
+          tidsPractice: tm.tidsPractice,
         }))
       };
 
