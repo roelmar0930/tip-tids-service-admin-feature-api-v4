@@ -18,6 +18,7 @@ const TaskRouter = require("./routes/TaskRoute");
 const ImageRoute = require("./routes/ImageRoute");
 const TeamMemberPointsRouter = require("./routes/TeamMemberPointsRoute");
 const TeamMemberRouter = require("./routes/TeamMemberRoute");
+const ReportRouter = require("./routes/ReportRoute");
 const ScheduleJobs = require("./schedule/ScheduleJobs");
 
 const app = express();
@@ -48,6 +49,7 @@ app.use("/task", TaskRouter);
 app.use("/image", ImageRoute);
 app.use("/teamMember", TeamMemberRouter);
 app.use("/teamMemberPoints", TeamMemberPointsRouter);
+app.use("/report", ReportRouter);
 
 app.get("/status", (req, res) => {
   // You can perform any checks or logic here to determine the health status
