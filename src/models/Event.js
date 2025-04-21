@@ -153,7 +153,6 @@ eventSchema.pre("findOneAndUpdate", function (next) {
 
 eventSchema.set("toJSON", {
   transform: (doc, ret, options) => {
-    delete ret._id;
     delete ret.__v;
     return ret;
   },
