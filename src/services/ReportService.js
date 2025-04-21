@@ -27,7 +27,7 @@ class ReportService {
 
       let totalTargetCompliance = 0;
       const eventReports = await Promise.all(events.map(async (event) => {
-        const eventTeamMemberEvents = teamMemberEvents.filter(tme => tme.eventId.toString() === event._id.toString());
+        const eventTeamMemberEvents = teamMemberEvents.filter(tme => tme.eventId.toString() === event.id.toString());
         const eventTotalInvitesSent = eventTeamMemberEvents.length;
         const eventTotalRegistered = eventTeamMemberEvents.filter(tme => tme.status === 'registered').length;
         const eventCompliancePercentage = (eventTotalRegistered / eventTotalInvitesSent) * 100;
@@ -76,8 +76,8 @@ class ReportService {
       const totalInvitesSent = teamMemberEvents.length;
       const totalRegistered = teamMemberEvents.filter(tme => tme.status === 'registered').length;
       const totalUnregistered = totalInvitesSent - totalRegistered;
-      const actualCompliancePercentage = (totalRegistered / totalInvitesSent) * 100;
-
+      const actualCompliancePercentage = totalInvitesSent > 0 ? (totalRegistered / totalInvitesSent) * 100 : 0;
+      
       return {
         eventId: event._id,
         eventName: event.title,
