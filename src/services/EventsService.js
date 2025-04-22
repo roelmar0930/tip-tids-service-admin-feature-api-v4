@@ -179,65 +179,63 @@ class EventsService {
     }
   }
 
-  async invitedTeamMembers(query) {
+  async getTeamMemberEvent(query) {
     try {
-      const { eventDetailsInd, teamMemberDetails, ...queryWithoutEventDetailsInd } = query;
-  
-      // Fetch all team member events based on the query
-      const teamMemberEvents = await TeamMemberEvent.find(queryWithoutEventDetailsInd);
+      // Fetch team member events based on query
+      const teamMemberEvents = await TeamMemberEvent.find(query || {});
   
       // Exit early if no team member events are found
       if (!teamMemberEvents.length) {
-        return [];
+        return {
+          teamMemberDetails: {},
+          unregisteredEvents: [],
+          registeredEvents: []
+        };
       }
   
-      // Fetch and clean up event details
-      const events = await Promise.all(
-        teamMemberEvents.map(async (teamMemberEvent) => {
-          try {
-            // Fetch event details only if eventDetailsInd is 'true'
-            const event = 
-              eventDetailsInd === 'true'
-                ? await this.getAllEvents({ id: teamMemberEvent.eventId })
-                : null;
-  
-            // Fetch team member details only if teamMemberDetails is 'true'
-            const teamMember =
-              teamMemberDetails === 'true'
-                ? await TeamMemberService.getTeamMember({
-                    workdayId: teamMemberEvent.teamMemberWorkdayId,
-                  })
-                : null;
-  
-            // Ensure event data is valid
-            if (!event && eventDetailsInd === 'true') {
-              console.warn(`Event not found for ID: ${teamMemberEvent.eventId}`);
-              return null; // Skip processing if event is missing and eventDetailsInd is true
+      // Get unique workday IDs from team member events
+      const workdayIds = [...new Set(teamMemberEvents.map(event => event.teamMemberWorkdayId))];
+      
+      // Fetch team member details for the first workday ID
+      const teamMember = workdayIds.length > 0 
+        ? await TeamMemberService.getTeamMember({ workdayId: workdayIds[0] })
+        : null;
+
+      // Separate TeamMemberEvents into registered and unregistered
+      const registeredTeamMemberEvents = teamMemberEvents.filter(event => event.status === 'registered');
+      const unregisteredTeamMemberEvents = teamMemberEvents.filter(event => event.status === 'unregistered');
+
+      // Fetch events for registered and unregistered TeamMemberEvents
+      const fetchEvents = async (teamMemberEvents) => {
+        return Promise.all(
+          teamMemberEvents.map(async (teamMemberEvent) => {
+            const event = await this.getAllEvents({ id: teamMemberEvent.eventId });
+            if (event) {
+              return {
+                eventDetails: event._doc,
+                additionalInfo: {
+                  isSurveyDone: teamMemberEvent.isSurveyDone || false,
+                  address: teamMemberEvent.address || "",
+                  invitedDate: teamMemberEvent.invitedDate || "",
+                  isPointsAwarded: teamMemberEvent.isPointsAwarded || false,
+                  status: teamMemberEvent.status || "unregistered"
+                }
+              };
             }
-  
-            const { status, ...eventWithoutStatus } = event ? event._doc : {};
-  
-            // Construct the cleaned event object
-            const cleanedEvent = {
-              ...teamMemberEvent._doc,
-              ...(eventDetailsInd === 'true' && { ...eventWithoutStatus }), // Include event details without 'status'
-              ...(teamMember && teamMemberDetails === 'true' && { ...teamMember._doc }), // Include team member details if available
-              eventStatus: event ? event.status : null, // Always include event status if event exists
-            };
-  
-            return cleanedEvent;
-          } catch (innerError) {
-            console.error(
-              `Error processing team member event ID: ${teamMemberEvent._id}`,
-              innerError
-            );
-            return null; // Return null for individual errors but continue processing
-          }
-        })
-      );
-  
-      // Filter out any null values from failed individual fetches
-      return events.filter(Boolean);
+            return null;
+          })
+        );
+      };
+
+      const registeredEvents = await fetchEvents(registeredTeamMemberEvents);
+      const unregisteredEvents = await fetchEvents(unregisteredTeamMemberEvents);
+
+      // Filter out null events and return the result
+      return {
+        teamMemberDetails: teamMember ? teamMember._doc : {},
+        unregisteredEvents: unregisteredEvents.filter(Boolean),
+        registeredEvents: registeredEvents.filter(Boolean)
+      };
     } catch (error) {
       logger.error('Error fetching invited team members:' + error);
       console.error('Error fetching invited team members:', error);

@@ -6,7 +6,7 @@ const upload = require("../middleware/UploadMiddleware");
 const {
   validateGetEventDetails,
   validateGetAllEvents,
-  validateInvitedTeamMembersQuery,
+  validateInvitedTeamMembersQuery
 } = require("../middleware/validator/EventValidator");
 
 router.get(
@@ -34,9 +34,9 @@ router.post("/inviteTeamMember", eventsController.inviteTeamMember);
 router.patch("/updateInvitedTeamMember", eventsController.updateInviteTeamMember);
 
 router.get(
-  "/invitedTeamMembers",
+  "/teamMemberEvent",
   validateInvitedTeamMembersQuery,
-  eventsController.invitedTeamMembers
+  eventsController.getTeamMemberEvent
 );
 
 module.exports = router;
