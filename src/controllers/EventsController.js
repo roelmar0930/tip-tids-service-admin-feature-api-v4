@@ -64,9 +64,9 @@ const updateInviteTeamMember = async (req, res, next) => {
   }
 };
 
-const invitedTeamMembers = async (req, res, next) => {
+const getTeamMemberEvent = async (req, res, next) => {
   try {
-    const teamMemberEvent = await EventsService.invitedTeamMembers(req.query);
+    const teamMemberEvent = await EventsService.getTeamMemberEvent(req.query);
     res.status(200).json(teamMemberEvent);
   } catch (error) {
     next(error);
@@ -81,5 +81,5 @@ module.exports = {
   deleteEvent,
   inviteTeamMember,
   updateInviteTeamMember,
-  invitedTeamMembers
+  getTeamMemberEvent
 };

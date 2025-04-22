@@ -70,28 +70,20 @@ const validateEventParams = [
 
 const validateInvitedTeamMembersQuery = [
   query("teamMemberWorkdayId")
-    .optional()
+    .notEmpty()
+    .withMessage("teamMemberWorkdayId is required")
     .isString()
     .withMessage("teamMemberWorkdayId must be a string"),
   query("teamMemberEmail")
-    .optional()
+    .notEmpty()
+    .withMessage("teamMemberEmail is required")
     .isString()
     .withMessage("teamMemberEmail must be a string"),
-  query("status")
-    .optional()
-    .isString()
-    .withMessage("status must be a string")
-    .custom(isValidTeamMemberEventStatus),
-  query("eventDetailsInd")
-    .optional()
-    .isBoolean(),
   (req, res, next) => {
     const errors = validationResult(req);
-
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
-
     next();
   },
 ];

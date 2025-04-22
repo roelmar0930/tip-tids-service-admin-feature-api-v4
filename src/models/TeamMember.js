@@ -2,19 +2,23 @@ const mongoose = require("mongoose");
 const { formatDateToManilaUTC } = require("../utils/DateUtils");
 
 const teamMemberSchema = new mongoose.Schema({
-  firstName: {
+  // firstName: {
+  //   type: String,
+  //   required: true,
+  // },
+  // lastName: {
+  //   type: String,
+  //   required: true,
+  // },
+  // middleName: {
+  //   type: String,
+  // },
+  // suffix: {
+  //   type: String,
+  // },
+  employeeName: {
     type: String,
     required: true,
-  },
-  lastName: {
-    type: String,
-    required: true,
-  },
-  middleName: {
-    type: String,
-  },
-  suffix: {
-    type: String,
   },
   jobProfile: {
     type: String,
@@ -27,7 +31,7 @@ const teamMemberSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  immediateManagerName: {
+  immediateManager: {
     type: String,
   },
   immediateManagerWorkdayId: {
@@ -43,10 +47,10 @@ const teamMemberSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  role: {
-    type: String,
-    default: "teamMember", // Default to 'teamMember'
-  },
+  // role: {
+  //   type: String,
+  //   default: "teamMember", // Default to 'teamMember'
+  // },
   tidsPractice: {
     type: String,
   },
