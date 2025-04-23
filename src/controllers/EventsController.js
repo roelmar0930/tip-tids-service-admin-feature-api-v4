@@ -73,6 +73,14 @@ const getTeamMemberEvent = async (req, res, next) => {
   }
 };
 
+const getEventDetails = async (req, res, next) => {
+  try {
+    const event = await EventsService.getEventDetails(req.params.id);
+    res.status(200).json(event);
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   getAllEvents,
@@ -81,5 +89,6 @@ module.exports = {
   deleteEvent,
   inviteTeamMember,
   updateInviteTeamMember,
-  getTeamMemberEvent
+  getTeamMemberEvent,
+  getEventDetails
 };

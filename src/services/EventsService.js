@@ -7,12 +7,24 @@ const logger = require("../utils/Logger");
 const TeamMemberService= require("../services/TeamMemberService");
 
 class EventsService {
-  async getAllEvents(query) {
-    if (query && Object.keys(query).length === 1 && query.id) {
-      return Event.findOne(query);
+  async getAllEvents(query = {}) {
+    try {
+      const allowedFilters = ['status', 'category', 'isArchived', 'isCompleted'];
+      const filter = {};
+      
+      // Only apply allowed filters if they exist in query
+      allowedFilters.forEach(key => {
+        if (query[key] !== undefined) {
+          filter[key] = query[key];
+        }
+      });
+
+      const events = await Event.find(filter);
+      return events;
+    } catch (error) {
+      logger.error("Error fetching events: " + error.message);
+      throw error;
     }
-  
-    return Event.find(query);
   }
 
   async createEvent(eventData, imageFile) {
@@ -209,7 +221,7 @@ class EventsService {
       const fetchEvents = async (teamMemberEvents) => {
         return Promise.all(
           teamMemberEvents.map(async (teamMemberEvent) => {
-            const event = await this.getAllEvents({ id: teamMemberEvent.eventId });
+            const event = await Event.findOne({ id: teamMemberEvent.eventId });
             if (event) {
               return {
                 eventDetails: event._doc,
@@ -242,9 +254,20 @@ class EventsService {
       throw error; // Re-throw to let the caller handle the error
     }
   }
+
+  async getEventDetails(id) {
+    try {
+      const event = await Event.findById(id);
+      if (!event) {
+        throw new createHttpError(404, "Event not found");
+      }
+      return event;
+    } catch (error) {
+      logger.error("Error fetching event details: " + error.message);
+      throw error;
+    }
+  }
   
 }
-  
-
 
 module.exports = new EventsService();
