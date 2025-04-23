@@ -42,11 +42,11 @@ const validateGetAllEvents = [
 ];
 
 const validateGetEventDetails = [
-  query("id")
+  param("id")
     .notEmpty()
     .withMessage("ID is required")
-    .isInt()
-    .withMessage("ID must be a number"),
+    .isString()
+    .withMessage("ID must be a string"),
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {

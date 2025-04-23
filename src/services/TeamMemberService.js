@@ -23,7 +23,7 @@ class TeamMemberService {
     try {
       const teamMember = await TeamMember.findOne(query);
       if (!teamMember) {
-        logger.error("m 404 Team member not found");
+        logger.error("404 Team member not found");
         throw new createHttpError(404, "Team member not found");
       }
       return teamMember;

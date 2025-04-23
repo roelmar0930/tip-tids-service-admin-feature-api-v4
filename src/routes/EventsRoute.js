@@ -39,4 +39,10 @@ router.get(
   eventsController.getTeamMemberEvent
 );
 
+router.get(
+  "/eventDetails/:id",
+  validateGetEventDetails,
+  eventsController.getEventDetails
+);
+
 module.exports = router;
