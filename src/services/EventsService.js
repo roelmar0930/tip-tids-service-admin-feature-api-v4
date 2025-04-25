@@ -5,6 +5,7 @@ const createHttpError = require("http-errors");
 const logger = require("../utils/Logger");
 
 const TeamMemberService= require("../services/TeamMemberService");
+const TeamMember = require("../models/TeamMember");
 
 class EventsService {
   async getAllEvents(query = {}) {
@@ -111,6 +112,42 @@ class EventsService {
       console.log("Event updated:", event);
       return event;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  async bulkInviteTeamMemberEvent(id) {
+    try {
+      const teamMembers = await TeamMember.find({});
+      const existingInvites = await TeamMemberEvent.find({ eventId: id });
+      
+      const existingInviteSet = new Set(
+        existingInvites.map(invite => `${invite.teamMemberWorkdayId}-${invite.teamMemberEmail}`)
+      );
+
+      let newTeamMemberEvents = [];
+
+      for (const member of teamMembers) {
+        const key = `${member.workdayId}-${member.workEmailAddress}`;
+        if (!existingInviteSet.has(key)) {
+          newTeamMemberEvents.push({
+            eventId: id,
+            teamMemberWorkdayId: member.workdayId,
+            teamMemberEmail: member.workEmailAddress
+          });
+        }
+      }
+
+      if (newTeamMemberEvents.length > 0) {
+        await TeamMemberEvent.insertMany(newTeamMemberEvents);
+        logger.info(`Bulk invited ${newTeamMemberEvents.length} new team members to event ${id}`);
+      } else {
+        logger.info(`No new team members to invite for event ${id}`);
+      }
+
+      return newTeamMemberEvents.length;
+    } catch (error) {
+      logger.error(`Error in bulkInviteTeamMemberEvent: ${error.message}`);
       throw error;
     }
   }
