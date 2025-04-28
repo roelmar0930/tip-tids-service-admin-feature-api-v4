@@ -5,6 +5,8 @@ const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const logger = require("./utils/Logger");
 const cors = require("cors");
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./config/swaggerConfig');
 require("./database");
 
 // Middleware
@@ -50,6 +52,9 @@ app.use("/image", ImageRoute);
 app.use("/teamMember", TeamMemberRouter);
 app.use("/teamMemberPoints", TeamMemberPointsRouter);
 app.use("/report", ReportRouter);
+
+// Swagger UI route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs));
 
 app.get("/status", (req, res) => {
   // You can perform any checks or logic here to determine the health status

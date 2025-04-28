@@ -8,8 +8,6 @@ const app = express();
 const router = express.Router();
 app.use(cookieParser());
 
-
-
 const oauth2Client = new google.auth.OAuth2(
   creds.web.client_id,
   creds.web.client_secret,
@@ -20,7 +18,7 @@ router.get("/auth", (req, res) => {
   const redirectUrl = req.query.redirectUrl || "/";
   const url = oauth2Client.generateAuthUrl({
     // added hd (that will direct the user to login using the TI credentials)
-    // hd: "telusinternational.com",
+    hd: process.env.NODE_ENV === "production" ? undefined : "telusinternational.com",
     access_type: "offline",
     scope: [
       "https://www.googleapis.com/auth/userinfo.profile",
