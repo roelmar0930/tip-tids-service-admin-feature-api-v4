@@ -8,8 +8,6 @@ const app = express();
 const router = express.Router();
 app.use(cookieParser());
 
-
-
 const oauth2Client = new google.auth.OAuth2(
   creds.web.client_id,
   creds.web.client_secret,
