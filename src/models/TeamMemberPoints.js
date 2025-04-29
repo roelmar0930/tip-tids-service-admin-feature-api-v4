@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const teamMemberPointsSchema = new mongoose.Schema({
   teamMemberWorkdayId: {
-    type: Number,
+    type: String,
     required: true,
   },
   teamMemberEmail: {
