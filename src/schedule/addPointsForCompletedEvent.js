@@ -1,11 +1,11 @@
 const TeamMemberEvent = require("../models/TeamMemberEvent");
 const TeamMemberPointsService = require("../services/TeamMemberPointsService");
-const EventsService = require("../services/EventsService");
+const Event = require("../models/Event");
 
 // Function to add points for completed event
 async function addPointsForCompletedEvent(eventId) {
   try {
-    const event = await EventsService.getAllEvents({ id: eventId });
+    const event = await Event.find({ id: eventId });
     if (!event) {
       console.error(`Event details not found for event ID: ${eventId}`);
       return;
@@ -44,8 +44,6 @@ async function awardPointsToTeamMember(teamMember, points, category) {
     points,
     category,
   });
-
-  console.log(points);
 
   teamMember.isPointsAwarded = true;
   await teamMember.save();
