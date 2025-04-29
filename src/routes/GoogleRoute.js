@@ -18,7 +18,7 @@ router.get("/auth", (req, res) => {
   const redirectUrl = req.query.redirectUrl || "/";
   const url = oauth2Client.generateAuthUrl({
     // added hd (that will direct the user to login using the TI credentials)
-    hd: process.env.NODE_ENV === "production" ? undefined : "telusinternational.com",
+    hd: process.env.NODE_ENV === "production" ? "telusinternational.com" : undefined ,
     access_type: "offline",
     scope: [
       "https://www.googleapis.com/auth/userinfo.profile",
