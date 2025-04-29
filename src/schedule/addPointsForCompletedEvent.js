@@ -45,8 +45,6 @@ async function awardPointsToTeamMember(teamMember, points, category) {
     category,
   });
 
-  console.log(points);
-
   teamMember.isPointsAwarded = true;
   await teamMember.save();
   console.log(`Points awarded and saved for ${teamMember.teamMemberEmail}`);
