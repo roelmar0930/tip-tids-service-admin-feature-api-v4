@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const TeamMemberEvent = require('../models/TeamMemberEvent');
 const TeamMember = require('../models/TeamMember');
 
-const MONGO_URI = 'mongodb://prod3ngagementAppV4:vF52xhXy4hYst6S@34.124.155.234:27017/tip';
+const MONGO_URI = 'mongodb://localhost:27017/yourDatabaseName'; // Replace with your MongoDB URI
 
 async function updateTeamMemberWorkdayIdsAndRemoveDuplicates() {
   try {
