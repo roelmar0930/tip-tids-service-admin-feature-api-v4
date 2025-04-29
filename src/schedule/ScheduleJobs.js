@@ -9,7 +9,7 @@ const {
 // Main scheduled job function
 module.exports = function ScheduleJobs() {
   // Schedule to mark outdated events as completed
-  schedule.scheduleJob("*/10 * * * *", async () => {
+  schedule.scheduleJob("*/1 * * * *", async () => {
     const now = new Date();
     try {
       const outdatedEvents = await getOutdatedEvents(now);
