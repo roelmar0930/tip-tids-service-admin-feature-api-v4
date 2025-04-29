@@ -14,6 +14,8 @@ const createEvent = async (req, res, next) => {
   const imageFile = req.file;
   try {
     const event = await EventsService.createEvent(eventData, imageFile);
+    await EventsService.bulkInviteTeamMemberEvent(event.id);
+
     res.status(200).json(event);
   } catch (error) {
     next(error);
@@ -25,6 +27,8 @@ const updateEvent = async (req, res, next) => {
   const imageFile = req.file;
   try {
     const event = await EventsService.updateEvent(updatedDetails, imageFile);
+    await EventsService.bulkInviteTeamMemberEvent(event.id);
+    
     res.status(200).send(event);
   } catch (error) {
     next(error);
