@@ -28,7 +28,7 @@ const generateUniqueCode = (title) => {
 async function updateRegistrationCodes() {
   try {
     await mongoose.connect(
-      "mongodb://3AUserQA:3ngag3m3ntAppQA@34.87.164.24:27017/tip",
+      "mongodb://localhost:27017/yourDatabaseName", // Replace with your MongoDB URI
       {
         useNewUrlParser: true,
         useUnifiedTopology: true,

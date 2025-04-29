@@ -2,7 +2,7 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const mongoose = require('mongoose');
 
-const uri = 'mongodb://127.0.0.1:27017/tip';
+const uri = 'mongodb://localhost:27017/yourDatabaseName'; // Replace with your MongoDB URI
 
 const teamRosterSchema = new mongoose.Schema({
     workdayId: {
