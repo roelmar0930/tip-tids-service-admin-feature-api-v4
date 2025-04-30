@@ -43,7 +43,7 @@ const taskSchema = new mongoose.Schema({
       require: true,
     },
     workdayId: {
-      type: Number,
+      type: String,
       require: true,
     },
   },
@@ -55,7 +55,7 @@ const taskSchema = new mongoose.Schema({
       type: String,
     },
     workdayId: {
-      type: Number,
+      type: String,
     },
   },
 });
