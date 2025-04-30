@@ -262,8 +262,6 @@ class TaskService {
         teamMemberEmail: query.teamMemberEmail,
       });
 
-      console.log("teamMemberTasks", teamMemberTasks);
-
       if (!teamMemberTasks.length) {
         return [];
       }

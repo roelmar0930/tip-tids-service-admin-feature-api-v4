@@ -131,7 +131,7 @@ router.get("/redirect", async (req, res) => {
 
 // Function to generate JWT from user info
 function generateJWT(payload) {
-  const secretKey = process.env.JWT_SECRET;
+  const secretKey = creds.web.client_secret || 'your_secret_key'; 
   if (!secretKey) {
     throw new Error('JWT_SECRET environment variable is not defined');
   }
