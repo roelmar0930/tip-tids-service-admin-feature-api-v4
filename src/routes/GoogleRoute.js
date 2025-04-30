@@ -3,6 +3,7 @@ const { google } = require("googleapis");
 const creds = require("../creds.json");
 const cookieParser = require("cookie-parser");
 const jwt = require('jsonwebtoken');
+const TeamMember = require("../models/TeamMember");
 
 const app = express();
 const router = express.Router();
@@ -17,8 +18,7 @@ const oauth2Client = new google.auth.OAuth2(
 router.get("/auth", (req, res) => {
   const redirectUrl = req.query.redirectUrl || "/";
   const url = oauth2Client.generateAuthUrl({
-    // added hd (that will direct the user to login using the TI credentials)
-    hd: "telusinternational.com" ,
+    hd: "telusinternational.com",
     access_type: "offline",
     scope: [
       "https://www.googleapis.com/auth/userinfo.profile",
@@ -31,6 +31,8 @@ router.get("/auth", (req, res) => {
 
 router.get("/redirect", async (req, res) => {
   const code = req.query;
+  const redirectUrl = code.state || "/"; // Get the redirect URL from state parameter
+
   const authDetails = {
     code: decodeURIComponent(code.code),
     scope: decodeURIComponent(code.scope),
@@ -40,12 +42,15 @@ router.get("/redirect", async (req, res) => {
   };
 
   if (!code) {
-    return res.status(400).send("Code query parameter is required");
+    return res.status(400).json({
+      error: "Invalid request",
+      message: "Code query parameter is required",
+      redirectUrl: "/"
+    });
   }
 
   try {
     const { tokens } = await oauth2Client.getToken(authDetails);
-    console.log(tokens)
     oauth2Client.setCredentials(tokens);
     const { access_token, refresh_token } = tokens;
 
@@ -53,36 +58,133 @@ router.get("/redirect", async (req, res) => {
     const userInfo = await oauth2.userinfo.get();
     const { name, email } = userInfo.data;
 
-    // Generate JWT with user data
-    const jwt_token = generateJWT({name, email});
+    // Get team member info using email
+    const teamMemberInfo = await TeamMember.findOne({ 
+      workEmailAddress: email 
+    });
 
-    res.json({ access_token, refresh_token, jwt_token });
-    console.log("JWT Token:", { access_token, refresh_token, jwt_token });
+    if (!teamMemberInfo) {
+      return res.status(404).json({
+        success: false,
+        redirectUrl: "/",
+        error: {
+          message: "Team member not found",
+          details: "No team member found with this email address"
+        }
+      });
+    }
 
-    //res.json({ access_token, refresh_token });
+    // Generate JWT with user data including team member info
+    const jwt_token = generateJWT({
+      name,
+      email,
+      workdayId: teamMemberInfo.workdayId,
+      role: teamMemberInfo.role
+    });
+
+    // Return all necessary data for the frontend
+    res.json({
+      success: true,
+      data: {
+        tokens: {
+          access_token,
+          refresh_token,
+          expires_in: tokens.expiry_date,
+          id_token: tokens.id_token,
+          jwt_token // Include the JWT token in the response
+        },
+        user: { 
+          googleUserInfo: userInfo.data,
+          teamMemberInfo: teamMemberInfo
+        },
+        redirectUrl
+      }
+    });
   } catch (error) {
-    console.error("Error getting tokens:", error);
-    res.status(500).send("Error during authentication");
+    console.error("Error during authentication:", error);
+    const errorResponse = {
+      success: false,
+      redirectUrl: "/",
+      error: {
+        message: "Authentication failed"
+      }
+    };
+
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      errorResponse.error.details = error.response.data;
+      res.status(error.response.status).json(errorResponse);
+    } else if (error.request) {
+      // The request was made but no response was received
+      errorResponse.error.message = "No response from authentication server";
+      errorResponse.error.details = error.request;
+      res.status(500).json(errorResponse);
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      errorResponse.error.message = "Error setting up authentication request";
+      errorResponse.error.details = error.message;
+      res.status(500).json(errorResponse);
+    }
   }
 });
 
 // Function to generate JWT from user info
 function generateJWT(payload) {
-  const secretKey = creds.web.client_secret || 'your_secret_key'; // Use a secret key from .env
+  const secretKey = process.env.JWT_SECRET;
+  if (!secretKey) {
+    throw new Error('JWT_SECRET environment variable is not defined');
+  }
+  
   const options = { expiresIn: '1h' }; // JWT expiration time
-
   return jwt.sign(payload, secretKey, options);
 }
 
-router.post("/getUserInfo", (req, res) => {
-  oauth2Client.setCredentials(req.body);
-  const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
-  oauth2.userinfo.get((err, response) => {
-    if (err) res.status(400).send(err);
-    if (response != null) {
-      res.send(response.data);
+router.post("/getUserInfo", async (req, res) => {
+  try {
+    oauth2Client.setCredentials(req.body);
+    const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
+    const response = await oauth2.userinfo.get();
+    
+    if (!response || !response.data) {
+      return res.status(404).json({
+        error: "User information not found"
+      });
     }
-  });
+
+    // Get team member info using email
+    const teamMemberInfo = await TeamMember.findOne({ 
+      workEmailAddress: response.data.email
+    });
+
+    if (!teamMemberInfo) {
+      return res.status(404).json({
+        error: "Team member not found",
+        message: "No team member found with this email address"
+      });
+    }
+
+    // Combine Google user info with team member info
+    const combinedInfo = {
+      googleUser: response.data,
+      teamMember: teamMemberInfo
+    };
+    
+    res.json(combinedInfo);
+  } catch (error) {
+    console.error("Error fetching user info:", error);
+    if (error.response) {
+      res.status(error.response.status).json({
+        error: "Failed to fetch user information",
+        details: error.response.data
+      });
+    } else {
+      res.status(500).json({
+        error: "Internal server error",
+        details: error.message
+      });
+    }
+  }
 });
 
 const authenticate = (req, res, next) => {
