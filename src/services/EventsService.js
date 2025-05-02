@@ -122,7 +122,7 @@ class EventsService {
       const existingInvites = await TeamMemberEvent.find({ eventId: id });
       
       const existingInviteSet = new Set(
-        existingInvites.map(invite => `${invite.teamMemberWorkdayId}-${invite.teamMemberEmail}`)
+        existingInvites.map(invite => `${invite.teamMemberWorkdayId}-${invite.email}`)
       );
 
       let newTeamMemberEvents = [];
@@ -133,7 +133,7 @@ class EventsService {
           newTeamMemberEvents.push({
             eventId: id,
             teamMemberWorkdayId: member.workdayId,
-            teamMemberEmail: member.workEmailAddress
+            teamMemberEmail: member.email
           });
         }
       }

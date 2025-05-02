@@ -60,7 +60,7 @@ router.get("/redirect", async (req, res) => {
 
     // Get team member info using email
     const teamMemberInfo = await TeamMember.findOne({ 
-      workEmailAddress: email 
+      email 
     });
 
     if (!teamMemberInfo) {
@@ -139,68 +139,5 @@ function generateJWT(payload) {
   const options = { expiresIn: '1h' }; // JWT expiration time
   return jwt.sign(payload, secretKey, options);
 }
-
-router.post("/getUserInfo", async (req, res) => {
-  try {
-    oauth2Client.setCredentials(req.body);
-    const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });
-    const response = await oauth2.userinfo.get();
-    
-    if (!response || !response.data) {
-      return res.status(404).json({
-        error: "User information not found"
-      });
-    }
-
-    // Get team member info using email
-    const teamMemberInfo = await TeamMember.findOne({ 
-      workEmailAddress: response.data.email
-    });
-
-    if (!teamMemberInfo) {
-      return res.status(404).json({
-        error: "Team member not found",
-        message: "No team member found with this email address"
-      });
-    }
-
-    // Combine Google user info with team member info
-    const combinedInfo = {
-      googleUser: response.data,
-      teamMember: teamMemberInfo
-    };
-    
-    res.json(combinedInfo);
-  } catch (error) {
-    console.error("Error fetching user info:", error);
-    if (error.response) {
-      res.status(error.response.status).json({
-        error: "Failed to fetch user information",
-        details: error.response.data
-      });
-    } else {
-      res.status(500).json({
-        error: "Internal server error",
-        details: error.message
-      });
-    }
-  }
-});
-
-const authenticate = (req, res, next) => {
-  const accessToken = req.cookies.access_token;
-
-  if (!accessToken) {
-    console.log("No access token found in cookies");
-    return res.status(401).send("Unauthorized: No access token provided");
-  }
-
-  req.accessToken = accessToken;
-  next();
-};
-
-router.get("/auth-status", authenticate, (req, res) => {
-  res.status(200).json({ authenticated: true });
-});
 
 module.exports = router;

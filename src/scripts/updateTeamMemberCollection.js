@@ -2,48 +2,9 @@ const fs = require('fs');
 const csv = require('csv-parser');
 const mongoose = require('mongoose');
 
-const uri = 'mongodb://localhost:27017/yourDatabaseName'; // Replace with your MongoDB URI
+const TeamRoster = require('../models/TeamMember'); // Adjust the path to your model
 
-const teamRosterSchema = new mongoose.Schema({
-    workdayId: {
-      type: Number,
-    },
-    employeeName: {
-      type: String,
-    },
-    jobProfile: {
-      type: String,
-    },
-    immediateManager: {
-      type: String,
-    },
-    immediateManagerWorkorderId: {
-      type: Number,
-    },
-    functionalArea: {
-      type: String,
-    },
-    site: {
-      type: String,
-    },
-    hireDate: {
-      type: String,
-    },
-    yearsOfService: {
-      type: Number,
-    },
-    workEmailAddress: {
-      type: String,
-    },
-    tidsPractice: {
-      type: String,
-    },
-    role: {
-      type: String,
-    },
-  });
-
-const TeamRoster = mongoose.model('TeamRoster', teamRosterSchema, 'teamRoster');
+const uri = ''; // Replace with your MongoDB URI
 
 // Connect to MongoDB
 mongoose
@@ -68,10 +29,20 @@ mongoose
 async function updateTeamMember(member, stats) {
   const existingMember = await TeamRoster.findOne({ workEmailAddress: member.workEmailAddress, workdayId: member.workdayId });
   if (existingMember) {
+    const updatedMember = { ...member };
+    if (updatedMember.intermmediateManager) {
+      updatedMember.intermmediateManager = updatedMember.intermmediateManager;
+      delete updatedMember.intermmediateManagerName;
+    }
+    if (updatedMember.yearOfService) {
+      updatedMember.yearOfService = updatedMember.yearOfService;
+      delete updatedMember.yearsOfService;
+    }
     await TeamRoster.updateOne(
       { workEmailAddress: member.workEmailAddress, workdayId: member.workdayId },
-      { $set: member }
+      { $set: updatedMember }
     );
+
     stats.updated++;
   } else {
     await TeamRoster.create(member);
