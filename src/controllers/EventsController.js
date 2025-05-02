@@ -2,7 +2,7 @@ const EventsService = require("../services/EventsService");
 
 const getAllEvents = async (req, res, next) => {
   try {
-    const events = await EventsService.getAllEvents(req.query);
+    const events = await EventsService.getAllEvents(req.query, req.timeZone);
     res.status(200).json(events);
   } catch (error) {
     next(error);
@@ -13,7 +13,7 @@ const createEvent = async (req, res, next) => {
   const eventData = req.body;
   const imageFile = req.file;
   try {
-    const event = await EventsService.createEvent(eventData, imageFile);
+    const event = await EventsService.createEvent(eventData, imageFile, req.timeZone);
     await EventsService.bulkInviteTeamMemberEvent(event.id);
 
     res.status(200).json(event);
@@ -26,7 +26,7 @@ const updateEvent = async (req, res, next) => {
   const updatedDetails = req.body;
   const imageFile = req.file;
   try {
-    const event = await EventsService.updateEvent(updatedDetails, imageFile);
+    const event = await EventsService.updateEvent(updatedDetails, imageFile, req.timeZone);
     await EventsService.bulkInviteTeamMemberEvent(event.id);
     
     res.status(200).send(event);
@@ -70,7 +70,7 @@ const updateInviteTeamMember = async (req, res, next) => {
 
 const getTeamMemberEvent = async (req, res, next) => {
   try {
-    const teamMemberEvent = await EventsService.getTeamMemberEvent(req.query);
+    const teamMemberEvent = await EventsService.getTeamMemberEvent(req.query, req.timeZone);
     res.status(200).json(teamMemberEvent);
   } catch (error) {
     next(error);
@@ -79,7 +79,7 @@ const getTeamMemberEvent = async (req, res, next) => {
 
 const getEventDetails = async (req, res, next) => {
   try {
-    const event = await EventsService.getEventDetails(req.params.id);
+    const event = await EventsService.getEventDetails(req.params.id, req.timeZone);
     res.status(200).json(event);
   } catch (error) {
     next(error);

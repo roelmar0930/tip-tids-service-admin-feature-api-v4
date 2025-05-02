@@ -55,7 +55,7 @@ class TaskService {
       teamMemberTasks.push({
         taskId: id,
         teamMemberWorkdayId: obj.workdayId,
-        teamMemberEmail: obj.workEmailAddress
+        teamMemberEmail: obj.email
       });
     });
 

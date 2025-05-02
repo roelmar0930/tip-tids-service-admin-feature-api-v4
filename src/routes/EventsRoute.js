@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const eventsController = require("../controllers/EventsController");
 const upload = require("../middleware/UploadMiddleware");
+const timeZone = require("../middleware/timeZone");
 const {
   validateGetAllEvents,
   validateGetEventDetails,
@@ -141,7 +142,7 @@ const {
  *       500:
  *         description: Server error
  */
-router.get("/", validateGetAllEvents, eventsController.getAllEvents);
+router.get("/", validateGetAllEvents, timeZone, eventsController.getAllEvents);
 
 /**
  * @swagger
@@ -200,7 +201,7 @@ router.get("/", validateGetAllEvents, eventsController.getAllEvents);
  *       500:
  *         description: Server error
  */
-router.post("/createEvent", upload.single("imageFile"), eventsController.createEvent);
+router.post("/createEvent", upload.single("imageFile"), timeZone, eventsController.createEvent);
 
 /**
  * @swagger
@@ -263,7 +264,7 @@ router.post("/createEvent", upload.single("imageFile"), eventsController.createE
  *       500:
  *         description: Server error
  */
-router.patch("/updateEvent", upload.single("imageFile"), eventsController.updateEvent);
+router.patch("/updateEvent", upload.single("imageFile"), timeZone, eventsController.updateEvent);
 
 /**
  * @swagger
@@ -389,7 +390,7 @@ router.patch("/updateInvitedTeamMember", eventsController.updateInviteTeamMember
  *       500:
  *         description: Server error
  */
-router.get("/teamMemberEvent", validateInvitedTeamMembersQuery, eventsController.getTeamMemberEvent);
+router.get("/teamMemberEvent", validateInvitedTeamMembersQuery, timeZone, eventsController.getTeamMemberEvent);
 
 /**
  * @swagger
@@ -415,6 +416,6 @@ router.get("/teamMemberEvent", validateInvitedTeamMembersQuery, eventsController
  *       500:
  *         description: Server error
  */
-router.get("/eventDetails/:id", validateGetEventDetails, eventsController.getEventDetails);
+router.get("/eventDetails/:id", validateGetEventDetails, timeZone, eventsController.getEventDetails);
 
 module.exports = router;
