@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const TeamMemberController = require("../controllers/TeamMemberController");
 const TeamMemberPointsController = require("../controllers/TeamMemberPointsController");
+const timeZone = require("../middleware/timeZone");
 const {
   validateGetTeamMemberQuery
 } = require("../middleware/validator/TeamMemberValidator");
@@ -213,7 +214,7 @@ const {
  *       500:
  *         description: Server error
  */
-router.get("/getAllTeamMember", validateGetTeamMemberQuery, TeamMemberController.getAllTeamMember);
+router.get("/getAllTeamMember", validateGetTeamMemberQuery, timeZone, TeamMemberController.getAllTeamMember);
 
 /**
  * @swagger
@@ -246,7 +247,7 @@ router.get("/getAllTeamMember", validateGetTeamMemberQuery, TeamMemberController
  *       500:
  *         description: Server error
  */
-router.get("/getTeamMember", TeamMemberController.getTeamMember);
+router.get("/getTeamMember", timeZone, TeamMemberController.getTeamMember);
 
 /**
  * @swagger
@@ -289,7 +290,7 @@ router.get("/getTeamMember", TeamMemberController.getTeamMember);
  *       500:
  *         description: Server error
  */
-router.post("/addEvent", TeamMemberController.addEvent);
+router.post("/addEvent", timeZone, TeamMemberController.addEvent);
 
 /**
  * @swagger
@@ -330,7 +331,7 @@ router.post("/addEvent", TeamMemberController.addEvent);
  *       500:
  *         description: Server error
  */
-router.patch("/updateEvent", TeamMemberController.updateEvent);
+router.patch("/updateEvent", timeZone, TeamMemberController.updateEvent);
 
 /**
  * @swagger
@@ -363,7 +364,7 @@ router.patch("/updateEvent", TeamMemberController.updateEvent);
  *       500:
  *         description: Server error
  */
-router.get("/getPoints", TeamMemberPointsController.getTeamMemberPoints);
+router.get("/getPoints", timeZone, TeamMemberPointsController.getTeamMemberPoints);
 
 /**
  * @swagger

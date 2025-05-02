@@ -113,32 +113,6 @@ const eventSchema = new mongoose.Schema({
   },
 });
 
-function deepLocalizeDates(obj) {
-  if (obj instanceof Date) {
-    // Convert UTC date to local timezone while keeping it as a Date object
-    const utcDate = new Date(obj);
-    const localDate = new Date(utcDate.getTime() - (utcDate.getTimezoneOffset() * 60000));
-    return localDate;
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map(deepLocalizeDates);
-  }
-
-  if (obj && typeof obj === 'object') {
-    // Skip processing if it's a MongoDB ObjectId
-    if (obj._bsontype === 'ObjectID') {
-      return obj;
-    }
-    
-    return Object.fromEntries(
-      Object.entries(obj).map(([key, value]) => [key, deepLocalizeDates(value)])
-    );
-  }
-
-  return obj;
-}
-
 // Middleware to set pointsNum before saving
 eventSchema.pre("save", async function (next) {
   const doc = this;
@@ -184,11 +158,8 @@ eventSchema.pre("findOneAndUpdate", function (next) {
 
 eventSchema.set("toJSON", {
   transform: (doc, ret, options) => {
-     // Convert all dates in the document to local timezone
-     const localizedData = deepLocalizeDates(ret);
-    
-     delete localizedData.__v;
-     return localizedData;
+     delete ret.__v;
+     return ret;
   },
 });
 

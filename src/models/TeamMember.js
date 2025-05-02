@@ -116,23 +116,8 @@ teamMemberSchema.pre("save", function (next) {
   next();
 });
 
-function localizeDate(date) {
-  if (date instanceof Date) {
-    const utcDate = new Date(date);
-    return new Date(utcDate.getTime() - utcDate.getTimezoneOffset() * 60000);
-  }
-  return date;
-}
-
 teamMemberSchema.set("toJSON", {
   transform: (doc, ret, options) => {
-    if (ret.createdAt) {
-      ret.createdAt = localizeDate(ret.createdAt);
-    }
-    if (ret.updatedAt) {
-      ret.updatedAt = localizeDate(ret.updatedAt);
-    }
-
     delete ret.__v;
     return ret;
   },

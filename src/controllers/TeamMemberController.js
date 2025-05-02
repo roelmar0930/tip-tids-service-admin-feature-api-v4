@@ -8,7 +8,7 @@ const upload = multer({ dest: "uploads/" });
 
 const getAllTeamMember = async (req, res, next) => {
   try {
-    const teamMembers = await TeamMemberService.getAllTeamMember(req.query);
+    const teamMembers = await TeamMemberService.getAllTeamMember(req.query, req.timeZone);
     res.status(200).json(teamMembers);
   } catch (error) {
     next(error);
@@ -17,7 +17,7 @@ const getAllTeamMember = async (req, res, next) => {
 
 const getTeamMember = async (req, res, next) => {
   try {
-    const teamMember = await TeamMemberService.getTeamMember(req.query);
+    const teamMember = await TeamMemberService.getTeamMember(req.query, req.timeZone);
     res.status(200).json(teamMember);
   } catch (error) {
     next(error);
@@ -28,7 +28,8 @@ const addEvent = async (req, res, next) => {
   try {
     const teamMemberEvent = await TeamMemberService.addEvent(
       req.query,
-      req.body
+      req.body,
+      req.timeZone
     );
     res.status(200).json(teamMemberEvent);
   } catch (error) {
@@ -40,7 +41,8 @@ const updateEvent = async (req, res, next) => {
   try {
     const teamMemberEvent = await TeamMemberService.updateEvent(
       req.query,
-      req.body
+      req.body,
+      req.timeZone
     );
     res.status(200).json(teamMemberEvent);
   } catch (error) {

@@ -3,7 +3,24 @@ const TeamMemberEvent = require("../models/TeamMemberEvent");
 const EventsService = require("./EventsService");
 const createHttpError = require("http-errors");
 const logger = require("../utils/Logger");
-const { formatDateToManilaUTC } = require("../utils/DateUtils");
+const { convertToTimezone, formatDateToManilaUTC } = require("../utils/DateUtils");
+
+// Helper function to convert dates to specified timezone
+const convertDatesToTimezone = (teamMember, timezone) => {
+  if (!teamMember) return teamMember;
+
+  const converted = teamMember.toObject();
+  
+  // Convert date fields
+  const dateFields = [ 'createdAt', 'updatedAt'];
+  dateFields.forEach(field => {
+    if (converted[field]) {
+      converted[field] = convertToTimezone(converted[field], timezone);
+    }
+  });
+  
+  return converted;
+};
 
 class TeamMemberService {
   parseManagerInfo(managerString) {
@@ -18,11 +35,11 @@ class TeamMemberService {
     return { name: managerString, workdayId: null };
   }
 
-  async getAllTeamMember(query) {
+  async getAllTeamMember(query, timezone = 'UTC') {
     try {
       const teamMembers = await TeamMember.find(query);
       if (teamMembers.length > 0) {
-        return teamMembers;
+        return teamMembers.map(member => convertDatesToTimezone(member, timezone));
       } else {
         logger.error("Team members not found");
         throw new Error("Team members not found");
@@ -32,20 +49,20 @@ class TeamMemberService {
     }
   }
 
-  async getTeamMember(query) {
+  async getTeamMember(query, timezone = 'UTC') {
     try {
       const teamMember = await TeamMember.findOne(query);
       if (!teamMember) {
         logger.error("404 Team member not found");
         throw new createHttpError(404, "Team member not found");
       }
-      return teamMember;
+      return convertDatesToTimezone(teamMember, timezone);
     } catch (error) {
       throw error;
     }
   }
 
-  async addEvent(query, eventBody) {
+  async addEvent(query, eventBody, timezone = 'UTC') {
     try {
       const request = {
         id: query.eventId,
@@ -78,7 +95,7 @@ class TeamMemberService {
     }
   }
 
-  async updateEvent(query, eventBody) {
+  async updateEvent(query, eventBody, timezone = 'UTC') {
     try {
       const request = {
         id: query.eventId,
@@ -109,7 +126,7 @@ class TeamMemberService {
     }
   }
 
-  async bulkSyncTeamMembers(csvData) {
+  async bulkSyncTeamMembers(csvData, timezone = 'UTC') {
     try {
       let updatedCount = 0;
       let addedCount = 0;

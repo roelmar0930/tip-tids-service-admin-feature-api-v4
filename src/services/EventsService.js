@@ -3,12 +3,29 @@ const TeamMemberEvent = require("../models/TeamMemberEvent");
 const ImageService = require("../services/ImageService");
 const createHttpError = require("http-errors");
 const logger = require("../utils/Logger");
-
+const { convertToTimezone } = require("../utils/DateUtils");
 const TeamMemberService= require("../services/TeamMemberService");
 const TeamMember = require("../models/TeamMember");
 
+// Helper function to convert dates to specified timezone
+const convertDatesToTimezone = (event, timezone) => {
+  if (!event) return event;
+
+  const converted = { ...event._doc || event };
+  
+  // Convert date fields
+  const dateFields = ['startDate', 'endDate', 'createdAt', 'updatedAt'];
+  dateFields.forEach(field => {
+    if (converted[field]) {
+      converted[field] = convertToTimezone(converted[field], timezone);
+    }
+  });
+  
+  return converted;
+};
+
 class EventsService {
-  async getAllEvents(query = {}) {
+  async getAllEvents(query = {}, timezone = 'UTC') {
     try {
       const allowedFilters = ['status', 'category', 'isArchived', 'isCompleted'];
       const filter = {};
@@ -21,14 +38,14 @@ class EventsService {
       });
 
       const events = await Event.find(filter);
-      return events;
+      return events.map(event => convertDatesToTimezone(event, timezone));
     } catch (error) {
       logger.error("Error fetching events: " + error.message);
       throw error;
     }
   }
 
-  async createEvent(eventData, imageFile) {
+  async createEvent(eventData, imageFile, timezone = 'UTC') {
     try {
       const { title } = eventData;
 
@@ -71,7 +88,7 @@ class EventsService {
     }
   }
 
-  async updateEvent(updatedDetails, imageFile) {
+  async updateEvent(updatedDetails, imageFile, timezone = 'UTC') {
     try {
       const event = await Event.findOne({ id: updatedDetails.id });
 
@@ -228,7 +245,7 @@ class EventsService {
     }
   }
 
-  async getTeamMemberEvent(query) {
+  async getTeamMemberEvent(query, timezone = 'UTC') {
     try {
       // Fetch team member events based on query
       const teamMemberEvents = await TeamMemberEvent.find(query || {});
@@ -281,9 +298,15 @@ class EventsService {
 
       // Filter out null events and return the result
       return {
-        teamMemberDetails: teamMember ? teamMember._doc : {},
-        unregisteredEvents: unregisteredEvents.filter(Boolean),
-        registeredEvents: registeredEvents.filter(Boolean)
+        teamMemberDetails: teamMember ? convertDatesToTimezone(teamMember, timezone) : {},
+        unregisteredEvents: unregisteredEvents.filter(Boolean).map(event => ({
+          ...event,
+          eventDetails: convertDatesToTimezone(event.eventDetails, timezone)
+        })),
+        registeredEvents: registeredEvents.filter(Boolean).map(event => ({
+          ...event,
+          eventDetails: convertDatesToTimezone(event.eventDetails, timezone)
+        }))
       };
     } catch (error) {
       logger.error('Error fetching invited team members:' + error);
@@ -292,13 +315,13 @@ class EventsService {
     }
   }
 
-  async getEventDetails(id) {
+  async getEventDetails(id, timezone = 'UTC') {
     try {
       const event = await Event.findById(id);
       if (!event) {
         throw new createHttpError(404, "Event not found");
       }
-      return event;
+      return convertDatesToTimezone(event, timezone);
     } catch (error) {
       logger.error("Error fetching event details: " + error.message);
       throw error;
