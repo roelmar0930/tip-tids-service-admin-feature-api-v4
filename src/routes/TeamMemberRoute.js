@@ -188,6 +188,12 @@ const {
  *     summary: Get all team members
  *     tags: [Team Members]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: query
  *         name: operationalManager.workdayId
  *         required: false
@@ -223,6 +229,12 @@ router.get("/getAllTeamMember", validateGetTeamMemberQuery, timeZone, TeamMember
  *     summary: Get a specific team member
  *     tags: [Team Members]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: query
  *         name: workdayId
  *         required: true
@@ -256,6 +268,12 @@ router.get("/getTeamMember", timeZone, TeamMemberController.getTeamMember);
  *     summary: Add an event to a team member
  *     tags: [Team Members]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: query
  *         name: eventId
  *         required: true
@@ -299,6 +317,12 @@ router.post("/addEvent", timeZone, TeamMemberController.addEvent);
  *     summary: Update an event for a team member
  *     tags: [Team Members]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: query
  *         name: eventId
  *         required: true
@@ -340,6 +364,12 @@ router.patch("/updateEvent", timeZone, TeamMemberController.updateEvent);
  *     summary: Get points for a team member
  *     tags: [Team Members]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: query
  *         name: workdayId
  *         required: true

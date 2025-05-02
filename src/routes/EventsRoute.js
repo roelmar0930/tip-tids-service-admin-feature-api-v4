@@ -115,6 +115,12 @@ const {
  *     summary: Get all events
  *     tags: [Events]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: query
  *         name: status
  *         schema:
@@ -150,6 +156,13 @@ router.get("/", validateGetAllEvents, timeZone, eventsController.getAllEvents);
  *   post:
  *     summary: Create a new event
  *     tags: [Events]
+ *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *     requestBody:
  *       required: true
  *       content:
@@ -209,6 +222,13 @@ router.post("/createEvent", upload.single("imageFile"), timeZone, eventsControll
  *   patch:
  *     summary: Update an existing event
  *     tags: [Events]
+ *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *     requestBody:
  *       required: true
  *       content:
@@ -372,6 +392,12 @@ router.patch("/updateInvitedTeamMember", eventsController.updateInviteTeamMember
  *     summary: Get team member events
  *     tags: [Events]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: query
  *         name: teamMemberWorkdayId
  *         required: true
@@ -399,6 +425,12 @@ router.get("/teamMemberEvent", validateInvitedTeamMembersQuery, timeZone, events
  *     summary: Get event details
  *     tags: [Events]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: path
  *         name: id
  *         required: true
