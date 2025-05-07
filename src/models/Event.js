@@ -88,7 +88,7 @@ const eventSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: formatDateToManilaUTC(new Date()),
+    default: Date.now,
   },
   createdBy: {
     email: {
@@ -122,6 +122,11 @@ eventSchema.pre("save", async function (next) {
     doc.id = nextId;
   }
 
+   // Update the updatedAt field
+   if (!doc.isNew) {
+    doc.updatedAt = new Date();
+  }
+
   if (this.category === "TIDS") {
     this.pointsNum = 50;
   } else if (this.category === "teamEvent") {
@@ -153,8 +158,8 @@ eventSchema.pre("findOneAndUpdate", function (next) {
 
 eventSchema.set("toJSON", {
   transform: (doc, ret, options) => {
-    delete ret.__v;
-    return ret;
+     delete ret.__v;
+     return ret;
   },
 });
 

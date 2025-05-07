@@ -1,26 +1,27 @@
 const mongoose = require('mongoose');
 const config = require('../config/config');
 const TeamMemberTask = require('../models/TeamMemberTask');
+const TeamMemberEvent = require('../models/TeamMemberEvent');
 const TeamMember = require('../models/TeamMember');
 
 async function updateTeamMemberWorkdayId() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(config.mongoUrl, {
+    await mongoose.connect("mongodb://localhost:27017/tip", {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
-    console.log('Connected to MongoDB');
+    logger.info('Connected to MongoDB');
 
     // Get all team members
     const teamMembers = await TeamMember.find({});
     if (teamMembers.length === 0) {
-      console.error('No team members found');
+      logger.error('No team members found');
       process.exit(1);
     }
 
     // Update TeamMemberTask entries with missing workdayId
-    const updatedTasks = await TeamMemberTask.updateMany(
+    const updatedTasks = await TeamMemberEvent.updateMany(
       { teamMemberWorkdayId: { $exists: false } },
       [
         {
@@ -33,7 +34,7 @@ async function updateTeamMemberWorkdayId() {
                       {
                         $filter: {
                           input: teamMembers,
-                          cond: { $eq: ["$$this.workEmailAddress", "$teamMemberEmail"] }
+                          cond: { $eq: ["$$this.email", "$teamMemberEmail"] }
                         }
                       },
                       0
@@ -48,14 +49,14 @@ async function updateTeamMemberWorkdayId() {
       ]
     );
 
-    console.log(`Updated ${updatedTasks.modifiedCount} TeamMemberTask entries with missing workdayId`);
+    logger.info(`Updated ${updatedTasks.modifiedCount} TeamMemberTask entries with missing workdayId`);
 
   } catch (error) {
-    console.error('Error:', error.message);
+    logger.error(`Error updating workday IDs: ${error.message}`);
   } finally {
     // Close MongoDB connection
     await mongoose.connection.close();
-    console.log('MongoDB connection closed');
+    logger.info('MongoDB connection closed');
   }
 }
 

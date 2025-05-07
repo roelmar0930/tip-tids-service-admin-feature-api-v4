@@ -29,14 +29,14 @@ class TeamMemberPointsService {
       if (!currentYearPoints) {
         const teamMemberInfo = await TeamMemberService.getTeamMember({
           workdayId: teamMemberWorkdayId,
-          workEmailAddress: teamMemberEmail,
+          email: teamMemberEmail,
         });
 
         if (teamMemberInfo) {
           currentYearPoints = new TeamMemberPoints({
             year: yearToday,
             teamMemberWorkdayId: teamMemberInfo.workdayId,
-            teamMemberEmail: teamMemberInfo.workEmailAddress,
+            teamMemberEmail: teamMemberInfo.email,
             starPoints: 0,
             starsPesoConversion: 0,
             starsDeduction: 0,
@@ -65,7 +65,7 @@ class TeamMemberPointsService {
       return { success: true, message: "Points added successfully" };
     } catch (error) {
       logger.error("Error : " + error);
-      console.error("Error:", error);
+      logger.error(`Error adding points: ${error.message}`);
     }
   }
 }

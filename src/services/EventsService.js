@@ -3,11 +3,30 @@ const TeamMemberEvent = require("../models/TeamMemberEvent");
 const ImageService = require("../services/ImageService");
 const createHttpError = require("http-errors");
 const logger = require("../utils/Logger");
-
+const { convertToTimezone } = require("../utils/DateUtils");
+const UniqueCodeUtils = require("../utils/UniqueCodeUtils");
 const TeamMemberService= require("../services/TeamMemberService");
+const TeamMember = require("../models/TeamMember");
+
+// Helper function to convert dates to specified timezone
+const convertDatesToTimezone = (event, timezone) => {
+  if (!event) return event;
+
+  const converted = { ...event._doc || event };
+  
+  // Convert date fields
+  const dateFields = ['startDate', 'endDate', 'createdAt', 'updatedAt', 'invitedDate'];
+  dateFields.forEach(field => {
+    if (converted[field]) {
+      converted[field] = convertToTimezone(converted[field], timezone);
+    }
+  });
+  
+  return converted;
+};
 
 class EventsService {
-  async getAllEvents(query = {}) {
+  async getAllEvents(query = {}, timezone = 'UTC') {
     try {
       const allowedFilters = ['status', 'category', 'isArchived', 'isCompleted'];
       const filter = {};
@@ -20,14 +39,14 @@ class EventsService {
       });
 
       const events = await Event.find(filter);
-      return events;
+      return events.map(event => convertDatesToTimezone(event, timezone));
     } catch (error) {
       logger.error("Error fetching events: " + error.message);
       throw error;
     }
   }
 
-  async createEvent(eventData, imageFile) {
+  async createEvent(eventData, imageFile, timezone = 'UTC') {
     try {
       const { title } = eventData;
 
@@ -55,22 +74,20 @@ class EventsService {
       const event = new Event({
         ...eventData,
         imageFilename,
-        qrCodeUrl: eventData.qrCodeUrl,
+        registrationCode: UniqueCodeUtils.generateUniqueCode(title),
       });
 
       // Save the event
       await event.save();
-      logger.info("Event created:", event);
-      console.log("Event created:", event);
+      logger.info(`Event created: ${event.title}`);
       return event;
     } catch (error) {
-      logger.error("Error creating event:" + error.message);
-      console.log("Error creating event:", error.message);
+      logger.error(`Error creating event: ${error.message}`);
       throw error;
     }
   }
 
-  async updateEvent(updatedDetails, imageFile) {
+  async updateEvent(updatedDetails, imageFile, timezone = 'UTC') {
     try {
       const event = await Event.findOne({ id: updatedDetails.id });
 
@@ -83,7 +100,6 @@ class EventsService {
       if (imageFile) {
         // REMOVE THE PREVIOUS IMAGE IF FILENAME IS NOT "DefaultEventImage"
         if (event.imageFilename != "DefaultEventImage") {
-          console.log("Calling deleteImage function...");
           await ImageService.deleteImage(
             `images/${process.env.NODE_ENV}/event/${event.imageFilename}`
           );
@@ -95,7 +111,6 @@ class EventsService {
         const datePart = now.toISOString().split("T")[0]; // Get the date part
         const timePart = now.toTimeString().split(" ")[0].replace(/:/g, "-");
 
-        console.log("Calling uploadImage function...");
         const fileName = `${titlePart}-${datePart}-${timePart}`;
 
         await ImageService.uploadImage(
@@ -108,9 +123,80 @@ class EventsService {
       event.set(updatedDetails);
       await event.save();
 
-      console.log("Event updated:", event);
+      logger.info(`Event updated: ${event.title}`);
       return event;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  async bulkInviteEvent(eventId, specificTeamMembers = []) {
+    try {
+      const event = await Event.findById(eventId);
+      if (!event) {
+        throw new createHttpError(404, "Event not found");
+      }
+
+      // Get all existing assignments for this event
+      const existingAssignments = await TeamMemberEvent.find({ eventId: event.id });
+      const existingAssignmentSet = new Set(
+        existingAssignments.map(assignment => `${assignment.teamMemberWorkdayId}-${assignment.teamMemberEmail}`)
+      );
+
+      let newAssignments = [];
+
+      if (specificTeamMembers.length > 0) {
+        // If specific team members are provided, only invite them
+        for (const member of specificTeamMembers) {
+          const key = `${member.workdayId}-${member.email}`;
+          if (!existingAssignmentSet.has(key)) {
+            // Verify if the team member is available
+            const teamMember = await TeamMember.findOne({ workdayId: member.workdayId, email: member.email });
+            if (teamMember) {
+              newAssignments.push({
+              eventId: event.id,
+              teamMemberWorkdayId: teamMember.workdayId,
+              teamMemberEmail: teamMember.email,
+              status: "unregistered",
+              invitedDate: new Date()
+              });
+            } else if (teamMember.status === "terminated") {
+              logger.info(`Team member ${member.workdayId} is TERMINATED and cannot be invited.`);
+            } else {
+              logger.info(`Team member ${member.workdayId} is not available for invitation.`);
+            }
+          }
+        }
+      } else {
+        // If no specific team members are provided, invite all team members
+        const allTeamMembers = await TeamMember.find({});
+        for (const member of allTeamMembers.filter(m => m.status !== "terminated")) {
+          const key = `${member.workdayId}-${member.email}`;
+          if (!existingAssignmentSet.has(key)) {
+            newAssignments.push({
+              eventId: event.id,
+              teamMemberWorkdayId: member.workdayId,
+              teamMemberEmail: member.email,
+              status: "unregistered",
+              invitedDate: new Date()
+            });
+          }
+        }
+      }
+
+      if (newAssignments.length > 0) {
+        await TeamMemberEvent.insertMany(newAssignments);
+        logger.info(`Bulk invited ${newAssignments.length} team members to event ${eventId}`);
+      } else {
+        logger.info(`No new team members to invite for event ${eventId}`);
+      }
+
+      return {
+        invitedCount: newAssignments.length,
+        mode: specificTeamMembers.length > 0 ? 'specific' : 'all'
+      };
+    } catch (error) {
+      logger.error(`Error in bulkInviteEvent: ${error.message}`);
       throw error;
     }
   }
@@ -151,9 +237,7 @@ class EventsService {
       });
 
       await teamMemberEvent.save();
-      logger.info("Team member event created:" + teamMemberEvent);
-      console.log("Team member event created:", teamMemberEvent);
-
+      logger.info(`Team member event created: ${teamMemberEvent.teamMemberEmail}`);
       return teamMemberEvent;
     } catch (error) {
       throw error;
@@ -182,16 +266,14 @@ class EventsService {
       teamMemberEvent.set(eventBody);
 
       await teamMemberEvent.save();
-      logger.info("Team member event updated:" + teamMemberEvent);
-      console.log("Team member event updated:", teamMemberEvent);
-
+      logger.info(`Team member event updated: ${teamMemberEvent.teamMemberEmail}`);
       return teamMemberEvent;
     } catch (error) {
       throw error;
     }
   }
 
-  async getTeamMemberEvent(query) {
+  async getTeamMemberEvent(query, timezone = 'UTC') {
     try {
       // Fetch team member events based on query
       const teamMemberEvents = await TeamMemberEvent.find(query || {});
@@ -244,30 +326,60 @@ class EventsService {
 
       // Filter out null events and return the result
       return {
-        teamMemberDetails: teamMember ? teamMember._doc : {},
-        unregisteredEvents: unregisteredEvents.filter(Boolean),
-        registeredEvents: registeredEvents.filter(Boolean)
+        teamMemberDetails: teamMember ? convertDatesToTimezone(teamMember, timezone) : {},
+        unregisteredEvents: unregisteredEvents.filter(Boolean).map(event => ({
+          ...event,
+          eventDetails: convertDatesToTimezone(event.eventDetails, timezone)
+        })),
+        registeredEvents: registeredEvents.filter(Boolean).map(event => ({
+          ...event,
+          eventDetails: convertDatesToTimezone(event.eventDetails, timezone)
+        }))
       };
     } catch (error) {
-      logger.error('Error fetching invited team members:' + error);
-      console.error('Error fetching invited team members:', error);
+      logger.error(`Error fetching invited team members: ${error.message}`);
       throw error; // Re-throw to let the caller handle the error
     }
   }
 
-  async getEventDetails(id) {
-    try {
-      const event = await Event.findById(id);
-      if (!event) {
-        throw new createHttpError(404, "Event not found");
-      }
-      return event;
-    } catch (error) {
-      logger.error("Error fetching event details: " + error.message);
-      throw error;
+async getEventDetails(id, timezone = 'UTC') {
+  try {
+    const event = await Event.findById(id);
+    if (!event) {
+      throw new createHttpError(404, "Event not found");
     }
+    
+    // Fetch invited team members for this event
+    const invitedTeamMembers = await TeamMemberEvent.find({ eventId: event.id });
+    
+    // Get full details of invited team members
+    const teamMemberDetails = await Promise.all(
+      invitedTeamMembers.map(async (member) => {
+        const teamMember = await TeamMember.findOne({ 
+          workdayId: member.teamMemberWorkdayId,
+          email: member.teamMemberEmail
+        });
+
+        return {
+          name: teamMember.firstName + " " + teamMember.lastName + (teamMember.suffix ? ` ${teamMember.suffix}` : ""),
+          email: teamMember.email,
+          workdayId: teamMember.workdayId,
+          invitedDate: member.invitedDate,
+        };
+      })
+    );
+
+    const eventWithInvitees = {
+      ...convertDatesToTimezone(event, timezone),
+      invitedTeamMembers: teamMemberDetails.map(member => convertDatesToTimezone(member, timezone))
+    };
+
+    return eventWithInvitees;
+  } catch (error) {
+    logger.error("Error fetching event details: " + error.message);
+    throw error;
   }
-  
+}
 }
 
 module.exports = new EventsService();

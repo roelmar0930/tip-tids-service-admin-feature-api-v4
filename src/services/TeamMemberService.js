@@ -3,13 +3,43 @@ const TeamMemberEvent = require("../models/TeamMemberEvent");
 const EventsService = require("./EventsService");
 const createHttpError = require("http-errors");
 const logger = require("../utils/Logger");
+const { convertToTimezone, formatDateToManilaUTC } = require("../utils/DateUtils");
+
+// Helper function to convert dates to specified timezone
+const convertDatesToTimezone = (teamMember, timezone) => {
+  if (!teamMember) return teamMember;
+
+  const converted = teamMember.toObject();
+  
+  // Convert date fields
+  const dateFields = [ 'createdAt', 'updatedAt'];
+  dateFields.forEach(field => {
+    if (converted[field]) {
+      converted[field] = convertToTimezone(converted[field], timezone);
+    }
+  });
+  
+  return converted;
+};
 
 class TeamMemberService {
-  async getAllTeamMember(query) {
+  parseManagerInfo(managerString) {
+    if (!managerString) return { name: null, workdayId: null };
+    const match = managerString.match(/(.+)\s*\((\d+)\)/);
+    if (match) {
+      return {
+        name: match[1].trim(),
+        workdayId: match[2]
+      };
+    }
+    return { name: managerString, workdayId: null };
+  }
+
+  async getAllTeamMember(query, timezone = 'UTC') {
     try {
       const teamMembers = await TeamMember.find(query);
       if (teamMembers.length > 0) {
-        return teamMembers;
+        return teamMembers.map(member => convertDatesToTimezone(member, timezone));
       } else {
         logger.error("Team members not found");
         throw new Error("Team members not found");
@@ -19,20 +49,20 @@ class TeamMemberService {
     }
   }
 
-  async getTeamMember(query) {
+  async getTeamMember(query, timezone = 'UTC') {
     try {
       const teamMember = await TeamMember.findOne(query);
       if (!teamMember) {
         logger.error("404 Team member not found");
         throw new createHttpError(404, "Team member not found");
       }
-      return teamMember;
+      return convertDatesToTimezone(teamMember, timezone);
     } catch (error) {
       throw error;
     }
   }
 
-  async addEvent(query, eventBody) {
+  async addEvent(query, eventBody, timezone = 'UTC') {
     try {
       const request = {
         id: query.eventId,
@@ -59,16 +89,13 @@ class TeamMemberService {
       });
 
       await teamMemberEvent.save();
-      logger.info("Team member event created:" + teamMemberEvent);
-      console.log("Team member event created:", teamMemberEvent);
-
       return teamMemberEvent;
     } catch (error) {
       throw error;
     }
   }
 
-  async updateEvent(query, eventBody) {
+  async updateEvent(query, eventBody, timezone = 'UTC') {
     try {
       const request = {
         id: query.eventId,
@@ -93,11 +120,89 @@ class TeamMemberService {
       teamMemberEvent.set(eventBody);
 
       await teamMemberEvent.save();
-      logger.info("Team member event updated:" + teamMemberEvent);
-      console.log("Team member event updated:", teamMemberEvent);
-
       return teamMemberEvent;
     } catch (error) {
+      throw error;
+    }
+  }
+
+  async bulkSyncTeamMembers(csvData, timezone = 'UTC') {
+    try {
+      let updatedCount = 0;
+      let addedCount = 0;
+      let terminatedCount = 0;
+
+      // Get all existing workday IDs
+      const existingWorkdayIds = new Set((await TeamMember.find({}, 'workdayId')).map(tm => tm.workdayId));
+
+      // Create a set of workday IDs from the CSV data
+      const csvWorkdayIds = new Set(csvData.map(row => row["Workday ID"]));
+
+      for (const row of csvData) {
+        const teamMemberData = {
+          workdayId: row["Workday ID"],
+          firstName: row["Legal Name - First Name"],
+          lastName: row["Legal Name - Last Name"],
+          middleName: row["Legal Name - Middle Name"],
+          suffix: row["Legal Name - Social Suffix"],
+          email: row["Work Email Address"],
+          jobProfile: row["Job Profile"],
+          bussinessTitle: row["Business Title"],
+          jobCode: row["Job Code"],
+          supervisor: {
+            email: row["Supervisor's Work Email"],
+            ...this.parseManagerInfo(row["Immediate Manager"])
+          },
+          operationalManager: {
+            ...this.parseManagerInfo(row["Operations/Practice Manager"]),
+          },
+          functionalArea: row["Functional Area"],
+          site: row["Site"],
+          originalHireDate: row["Original Hire Date"] ? formatDateToManilaUTC(new Date(row["Original Hire Date"])) : null,
+          hireDate: row["Hire Date"] ? formatDateToManilaUTC(new Date(row["Hire Date"])) : null,
+          continuousServiceDate: row["Continuous Service Date"] ? formatDateToManilaUTC(new Date(row["Continuous Service Date"])) : null,
+          yearOfService: row["Years of Service"] ? parseInt(row["Years of Service"]) : null,
+          employeeType: row["Employee Type"],
+          practice: row["Practice"],
+          group: row["Group"],
+          status: row["HR Status"]?.toLowerCase() === "terminated" ? "terminated" : "active",
+          updatedAt: new Date()
+        };
+
+        if (existingWorkdayIds.has(teamMemberData.workdayId)) {
+          // Update existing team member
+          await TeamMember.updateOne(
+            { workdayId: teamMemberData.workdayId },
+            { $set: teamMemberData }
+          );
+          updatedCount++;
+        } else {
+          // Add new team member
+          const newTeamMember = new TeamMember(teamMemberData);
+          await newTeamMember.save();
+          addedCount++;
+        }
+
+        // Remove this workday ID from the set of existing IDs
+        existingWorkdayIds.delete(teamMemberData.workdayId);
+      }
+
+      // Terminate team members that exist in the database but not in the CSV
+      for (const workdayId of Array.from(existingWorkdayIds)) {
+        const teamMember = await TeamMember.findOne({ workdayId });
+        if (teamMember && teamMember.status === "terminated") {
+          continue;
+        }
+        await TeamMember.updateOne(
+          { workdayId },
+          { $set: { status: "terminated", updatedAt: new Date() } }
+        );
+        terminatedCount++;
+      }
+
+      return { updatedCount, addedCount, terminatedCount };
+    } catch (error) {
+      logger.error("Error in bulkSyncTeamMembers: " + error);
       throw error;
     }
   }

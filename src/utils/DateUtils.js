@@ -1,15 +1,15 @@
+const moment = require('moment-timezone');
+
 const formatDateToUTC = (formattedDate) => {
-  const date = new Date(formattedDate);
-  const utcDate = new Date(date.getTime() - 8 * 60 * 60 * 1000);
-  const utcString = utcDate.toISOString();
-  return utcString;
+  return moment(formattedDate).utc().format();
 };
 
 const formatDateToManilaUTC = (dateInput) => {
-  const date = new Date(dateInput);
-  const manilaDate = new Date(date.getTime() + 8 * 60 * 60 * 1000);
-  const utcString = manilaDate.toISOString();
-  return utcString;
+  return moment(dateInput).tz('Asia/Manila').utc().format();
 };
 
-module.exports = { formatDateToManilaUTC, formatDateToUTC };
+const convertToTimezone = (date, timezone) => {
+  return moment(date).tz(timezone).format();
+};
+
+module.exports = { formatDateToManilaUTC, formatDateToUTC, convertToTimezone };

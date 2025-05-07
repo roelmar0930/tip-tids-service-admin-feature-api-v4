@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const getConfig = require("./config/config"); // Import the async config function
+const logger = require("./utils/Logger");
 
 async function initializeDatabase() {
   try {
@@ -13,20 +14,15 @@ async function initializeDatabase() {
       useUnifiedTopology: true,
     });
 
-    console.log("MONGOOSE: connected");
-    console.log("Collections:");
+    logger.info("MongoDB connected successfully");
     mongoose.connection.db.listCollections().toArray((err, names) => {
       if (err) {
-        console.log("Error listing collections:", err);
-      } else {
-        names.forEach((e) => {
-          console.log("-->", e.name); // Log the collection names
-        });
+        logger.error(`Error listing collections: ${err.message}`);
       }
     });
 
   } catch (error) {
-    console.error("Error during database initialization:", error.message);
+    logger.error(`Database initialization failed: ${error.message}`);
     process.exit(1); // Exit if database connection fails
   }
 }
@@ -36,10 +32,10 @@ initializeDatabase();
 
 // Event listener for connection closed
 mongoose.connection.on("close", () => {
-  console.log("MONGOOSE: connection closed");
+  logger.info("MongoDB connection closed");
 });
 
 // Event listener for connection errors
 mongoose.connection.on("error", (error) => {
-  console.log("MONGOOSE: connection error", error);
+  logger.error(`MongoDB connection error: ${error.message}`);
 });

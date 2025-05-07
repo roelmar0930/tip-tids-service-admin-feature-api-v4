@@ -2,40 +2,57 @@ const mongoose = require("mongoose");
 const { formatDateToManilaUTC } = require("../utils/DateUtils");
 
 const teamMemberSchema = new mongoose.Schema({
-  // firstName: {
-  //   type: String,
-  //   required: true,
-  // },
-  // lastName: {
-  //   type: String,
-  //   required: true,
-  // },
-  // middleName: {
-  //   type: String,
-  // },
-  // suffix: {
-  //   type: String,
-  // },
-  employeeName: {
-    type: String,
-    required: true,
-  },
-  jobProfile: {
-    type: String,
-  },
-  workEmailAddress: {
-    type: String,
-    required: true,
-  },
   workdayId: {
     type: String,
     required: true,
   },
-  immediateManager: {
+  firstName: {
+    type: String,
+    required: true,
+  },
+  lastName: {
+    type: String,
+    required: true,
+  },
+  middleName: {
     type: String,
   },
-  immediateManagerWorkdayId: {
+  suffix: {
     type: String,
+  },
+  email: {
+    type: String,
+  },
+  jobProfile: {
+    type: String,
+  },
+  businessTitle: {
+    type: String,
+  },
+  jobCode: {
+    type: String,
+  },
+  supervisor: {
+    email: {
+      type: String,
+    },
+    name: {
+      type: String,
+    },
+    workdayId: {
+      type: String,
+    },
+  },
+  operationalManager: {
+    email: {
+      type: String,
+    },
+    name: {
+      type: String,
+    },
+    workdayId: {
+      type: String,
+    },
   },
   functionalArea: {
     type: String,
@@ -43,20 +60,39 @@ const teamMemberSchema = new mongoose.Schema({
   site: {
     type: String,
   },
+  originalHireDate: {
+    type: Date,
+  },
   hireDate: {
     type: Date,
-    required: true,
   },
-  // role: {
-  //   type: String,
-  //   default: "teamMember", // Default to 'teamMember'
-  // },
-  tidsPractice: {
+  continuousServiceDate: {
+    type: Date,
+  },
+  yearOfService: {
+    type: Number,
+  },
+  employeeType: {
     type: String,
+  },
+  practice: {
+    type: String,
+  },
+  group: {
+    type: String,
+  },
+  role: {
+    type: String,
+    default: "teamMember", // Default to 'teamMember'
+  },
+  status: {
+    type: String,
+    enum: ["active", "terminated"],
+    default: "active",
   },
   createdAt: {
     type: Date,
-    default: formatDateToManilaUTC(new Date()),
+    default: Date.now,
   },
   updatedAt: {
     type: Date,
@@ -79,10 +115,8 @@ teamMemberSchema.pre("save", function (next) {
   next();
 });
 
-
 teamMemberSchema.set("toJSON", {
   transform: (doc, ret, options) => {
-    delete ret._id;
     delete ret.__v;
     return ret;
   },

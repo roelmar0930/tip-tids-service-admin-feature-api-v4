@@ -106,11 +106,11 @@ class ReportService {
       const teamMemberEvents = await TeamMemberEvent.find({ eventId: event.id }).lean();
       const teamMemberIds = teamMemberEvents.map(tme => tme.teamMemberWorkdayId);
       const teamMemberEmail = teamMemberEvents.map(tme => tme.teamMemberEmail);
-      const teamMembers = await TeamMember.find({ workdayId: { $in: teamMemberIds }, workEmailAddress: { $in: teamMemberEmail } }).lean();
+      const teamMembers = await TeamMember.find({ workdayId: { $in: teamMemberIds }, email: { $in: teamMemberEmail } }).lean();
 
       // Create a map of workdayId to team member event details
       const teamMemberEventMap = teamMemberEvents.reduce((map, tme) => {
-        map[tme.teamMemberWorkdayId] = {
+        map[tme.teamMemberWorkdayId, tme.teamMemberEmail] = {
           status: tme.status,
           isPointsAwarded: tme.isPointsAwarded,
           isSurveyDone: tme.isSurveyDone,
@@ -125,20 +125,21 @@ class ReportService {
         totalInvited: teamMembers.length,
         invitedTeamMembers: teamMembers.map(tm => ({
           workdayId: tm.workdayId,
-          email: tm.workEmailAddress,
-          fullName: tm.employeeName,
+          email: tm.email,
+          fullName: tm.firstName + ' '  + tm.middleName + ' ' + tm.lastName + ' ' + (tm.suffix ? tm.suffix : ''),
           jobProfile: tm.jobProfile,
           functionalArea: tm.functionalArea,
           firstName: tm.firstName,
           lastName: tm.lastName,
           middleName: tm.middleName,
           suffix: tm.suffix,
-          immediateManagerName: tm.immediateManager,
-          eventStatus: teamMemberEventMap[tm.workdayId].status,
-          isPointsAwarded: teamMemberEventMap[tm.workdayId].isPointsAwarded,
-          isSurveyDone: teamMemberEventMap[tm.workdayId].isSurveyDone,
-          invitedDate: teamMemberEventMap[tm.workdayId].invitedDate,
-          tidsPractice: tm.tidsPractice,
+          supervisorName: tm.supervisor.name,
+          operationalManagerName: tm.operationalManager.name,
+          eventStatus: teamMemberEventMap[tm.workdayId, tm.email].status,
+          isPointsAwarded: teamMemberEventMap[tm.workdayId, tm.email].isPointsAwarded,
+          isSurveyDone: teamMemberEventMap[tm.workdayId, tm.email].isSurveyDone,
+          invitedDate: teamMemberEventMap[tm.workdayId, tm.email].invitedDate,
+          tidsPractice: tm.practice,
         }))
       };
 

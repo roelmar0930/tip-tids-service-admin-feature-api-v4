@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const eventsController = require("../controllers/EventsController");
 const upload = require("../middleware/UploadMiddleware");
+const timeZone = require("../middleware/timeZone");
 const {
   validateGetAllEvents,
   validateGetEventDetails,
@@ -114,6 +115,12 @@ const {
  *     summary: Get all events
  *     tags: [Events]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: query
  *         name: status
  *         schema:
@@ -141,7 +148,7 @@ const {
  *       500:
  *         description: Server error
  */
-router.get("/", validateGetAllEvents, eventsController.getAllEvents);
+router.get("/", validateGetAllEvents, timeZone, eventsController.getAllEvents);
 
 /**
  * @swagger
@@ -149,6 +156,13 @@ router.get("/", validateGetAllEvents, eventsController.getAllEvents);
  *   post:
  *     summary: Create a new event
  *     tags: [Events]
+ *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *     requestBody:
  *       required: true
  *       content:
@@ -188,6 +202,9 @@ router.get("/", validateGetAllEvents, eventsController.getAllEvents);
  *               imageFile:
  *                 type: string
  *                 format: binary
+ *               teamMembers:
+ *                 type: string
+ *                 description: JSON string array of team members to assign [{workdayId, email}]
  *     responses:
  *       200:
  *         description: Event created successfully
@@ -200,7 +217,7 @@ router.get("/", validateGetAllEvents, eventsController.getAllEvents);
  *       500:
  *         description: Server error
  */
-router.post("/createEvent", upload.single("imageFile"), eventsController.createEvent);
+router.post("/createEvent", upload.single("imageFile"), timeZone, eventsController.createEvent);
 
 /**
  * @swagger
@@ -208,6 +225,13 @@ router.post("/createEvent", upload.single("imageFile"), eventsController.createE
  *   patch:
  *     summary: Update an existing event
  *     tags: [Events]
+ *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *     requestBody:
  *       required: true
  *       content:
@@ -249,6 +273,9 @@ router.post("/createEvent", upload.single("imageFile"), eventsController.createE
  *               imageFile:
  *                 type: string
  *                 format: binary
+ *               teamMembers:
+ *                 type: string
+ *                 description: JSON string array of team members to assign [{workdayId, email}]
  *     responses:
  *       200:
  *         description: Event updated successfully
@@ -263,7 +290,7 @@ router.post("/createEvent", upload.single("imageFile"), eventsController.createE
  *       500:
  *         description: Server error
  */
-router.patch("/updateEvent", upload.single("imageFile"), eventsController.updateEvent);
+router.patch("/updateEvent", upload.single("imageFile"), timeZone, eventsController.updateEvent);
 
 /**
  * @swagger
@@ -371,6 +398,12 @@ router.patch("/updateInvitedTeamMember", eventsController.updateInviteTeamMember
  *     summary: Get team member events
  *     tags: [Events]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: query
  *         name: teamMemberWorkdayId
  *         required: true
@@ -389,15 +422,23 @@ router.patch("/updateInvitedTeamMember", eventsController.updateInviteTeamMember
  *       500:
  *         description: Server error
  */
-router.get("/teamMemberEvent", validateInvitedTeamMembersQuery, eventsController.getTeamMemberEvent);
+router.get("/teamMemberEvent", validateInvitedTeamMembersQuery, timeZone, eventsController.getTeamMemberEvent);
+
+
 
 /**
  * @swagger
  * /events/eventDetails/{id}:
  *   get:
- *     summary: Get event details
+ *     summary: Get event details including invited team members
  *     tags: [Events]
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Timezone for the response (default UTC)
  *       - in: path
  *         name: id
  *         required: true
@@ -405,16 +446,84 @@ router.get("/teamMemberEvent", validateInvitedTeamMembersQuery, eventsController
  *           type: string
  *     responses:
  *       200:
- *         description: Event details
+ *         description: Event details with invited team members
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Event'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Event'
+ *                 - type: object
+ *                   properties:
+ *                     invitedTeamMembers:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           workdayId:
+ *                             type: string
+ *                           email:
+ *                             type: string
+ *                           invitationStatus:
+ *                             type: string
+ *                             enum: [registered, unregistered]
+ *                           invitedDate:
+ *                             type: string
+ *                             format: date-time
  *       404:
  *         description: Event not found
  *       500:
  *         description: Server error
  */
-router.get("/eventDetails/:id", validateGetEventDetails, eventsController.getEventDetails);
+router.get("/eventDetails/:id", validateGetEventDetails, timeZone, eventsController.getEventDetails);
+
+/**
+ * @swagger
+ * /events/{eventId}/bulkAssign:
+ *   post:
+ *     summary: Bulk assign team members to an event
+ *     tags: [Events]
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID of the event to assign team members to
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               teamMembers:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     workdayId:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: Team members successfully assigned to the event
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 assignedCount:
+ *                   type: number
+ *       400:
+ *         description: Invalid input data
+ *       404:
+ *         description: Event not found
+ *       500:
+ *         description: Server error
+ */
+router.post("/:eventId/bulkAssign", eventsController.bulkAssignEvent);
 
 module.exports = router;
