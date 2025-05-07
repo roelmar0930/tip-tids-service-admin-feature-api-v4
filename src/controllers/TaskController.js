@@ -13,8 +13,8 @@ const getTasks = async (req, res) => {
 
     res.status(200).json(tasks);
   } catch (error) {
-    console.error("Error in getTasks:", error.message);
-    res.status(500).json({ error: error.message || "Internal server error" });
+    logger.error(`Error in getTasks: ${error.message}`);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -77,12 +77,11 @@ const getAssignedTaskWithFilter = async (req, res, next) => {
     const filters = req.body || {}; 
 
     const tasks = await TaskService.getAssignedTasksByFilters(filters);
-    console.log(filters)
 
     res.status(200).json(tasks);
   } catch (error) {
-    console.error("Error in getAssignedTask:", error.message);
-    res.status(500).json({ error: error.message || "Internal server error" });
+    logger.error(`Error in getAssignedTask: ${error.message}`);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 

@@ -5,6 +5,7 @@ const {
   formatDateToManilaUTC,
   formatDateToUTC,
 } = require("../utils/DateUtils");
+const logger = require("../utils/Logger");
 
 // Main scheduled job function
 module.exports = function ScheduleJobs() {
@@ -18,14 +19,14 @@ module.exports = function ScheduleJobs() {
         if (isEventCompleted(event, now)) {
           event.isCompleted = true;
           await event.save();
-          console.log(`Event ID ${event.id} is marked as completed.`);
+          logger.info(`Event ID ${event.id} is marked as completed`);
         }
       }
 
-      // Separate function to add points for all completed, active events
       await awardPointsForCompletedEvents();
+      logger.info(`Points awarded for completed events`);
     } catch (error) {
-      console.error("Failed to run the scheduled job:", error);
+      logger.error(`Failed to run the scheduled job: ${error.message}`);
     }
   });
 };
@@ -56,6 +57,5 @@ async function awardPointsForCompletedEvents() {
 
   for (const event of completedActiveEvents) {
     await addPointsForCompletedEvent(event.id);
-    console.log(`Points awarded for completed active event ID: ${event.id}`);
   }
 }

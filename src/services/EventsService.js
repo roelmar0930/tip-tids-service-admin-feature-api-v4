@@ -79,12 +79,10 @@ class EventsService {
 
       // Save the event
       await event.save();
-      logger.info("Event created:", event);
-      console.log("Event created:", event);
+      logger.info(`Event created: ${event.title}`);
       return event;
     } catch (error) {
-      logger.error("Error creating event:" + error.message);
-      console.log("Error creating event:", error.message);
+      logger.error(`Error creating event: ${error.message}`);
       throw error;
     }
   }
@@ -102,7 +100,6 @@ class EventsService {
       if (imageFile) {
         // REMOVE THE PREVIOUS IMAGE IF FILENAME IS NOT "DefaultEventImage"
         if (event.imageFilename != "DefaultEventImage") {
-          console.log("Calling deleteImage function...");
           await ImageService.deleteImage(
             `images/${process.env.NODE_ENV}/event/${event.imageFilename}`
           );
@@ -114,7 +111,6 @@ class EventsService {
         const datePart = now.toISOString().split("T")[0]; // Get the date part
         const timePart = now.toTimeString().split(" ")[0].replace(/:/g, "-");
 
-        console.log("Calling uploadImage function...");
         const fileName = `${titlePart}-${datePart}-${timePart}`;
 
         await ImageService.uploadImage(
@@ -127,7 +123,7 @@ class EventsService {
       event.set(updatedDetails);
       await event.save();
 
-      console.log("Event updated:", event);
+      logger.info(`Event updated: ${event.title}`);
       return event;
     } catch (error) {
       throw error;
@@ -136,7 +132,6 @@ class EventsService {
 
   async bulkInviteEvent(eventId, specificTeamMembers = []) {
     try {
-      console.log(eventId)
       const event = await Event.findById(eventId);
       if (!event) {
         throw new createHttpError(404, "Event not found");
@@ -242,9 +237,7 @@ class EventsService {
       });
 
       await teamMemberEvent.save();
-      logger.info("Team member event created:" + teamMemberEvent);
-      console.log("Team member event created:", teamMemberEvent);
-
+      logger.info(`Team member event created: ${teamMemberEvent.teamMemberEmail}`);
       return teamMemberEvent;
     } catch (error) {
       throw error;
@@ -273,9 +266,7 @@ class EventsService {
       teamMemberEvent.set(eventBody);
 
       await teamMemberEvent.save();
-      logger.info("Team member event updated:" + teamMemberEvent);
-      console.log("Team member event updated:", teamMemberEvent);
-
+      logger.info(`Team member event updated: ${teamMemberEvent.teamMemberEmail}`);
       return teamMemberEvent;
     } catch (error) {
       throw error;
@@ -346,8 +337,7 @@ class EventsService {
         }))
       };
     } catch (error) {
-      logger.error('Error fetching invited team members:' + error);
-      console.error('Error fetching invited team members:', error);
+      logger.error(`Error fetching invited team members: ${error.message}`);
       throw error; // Re-throw to let the caller handle the error
     }
   }

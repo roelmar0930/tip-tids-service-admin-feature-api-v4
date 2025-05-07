@@ -34,8 +34,7 @@ class TaskService {
       return tasks;
 
     }catch (error) {
-      logger.error("Error fetching task:" + error.message);
-      console.log("Error fetching task:", error.message);
+      logger.error(`Error fetching task: ${error.message}`);
       throw error;
     }
   }
@@ -72,10 +71,10 @@ class TaskService {
     try {
       const task = new Task({ ...taskData });
       await task.save();
-      logger.info("Task created:" + task);
+      logger.info(`Task created: ${task._id}`);
       return task;
     } catch (error) {
-      logger.error("Error creating task:" + error.message);
+      logger.error(`Error creating task: ${error.message}`);
       throw error;
     }
   }
@@ -97,8 +96,7 @@ class TaskService {
       task.set(updatedDetails);
       await task.save();
 
-      logger.info("Task updated:" + task);
-      console.log("Task updated:", task);
+      logger.info(`Task updated: ${task._id}`);
       return task;
     } catch (error) {
       throw error;
@@ -154,9 +152,7 @@ class TaskService {
       });
 
       await teamMemberTask.save();
-      logger.info("Team member task created:" + teamMemberTask);
-      console.log("Team member task created:", teamMemberTask);
-
+      logger.info(`Task assigned to a team member with ID: ${teamMemberTask._id}`);
       return teamMemberTask;
     } catch (error) {
       throw error;
@@ -202,9 +198,7 @@ class TaskService {
       teamMemberTask.set(taskBody);
 
       await teamMemberTask.save();
-      logger.info("Team member task updated: " + teamMemberTask);
-      console.log("Team member task updated: ", teamMemberTask);
-
+      logger.info(`Task updated to a assigned team member with ID: ${teamMemberTask._id}`);
       return teamMemberTask;
     } catch (error) {
       throw error;
@@ -242,7 +236,6 @@ class TaskService {
       return tasks;
     }catch (error) {
       logger.error("Error fetching teamMemberTask: " + error.message);
-      console.log("Error fetching teamMemberTask: ", error.message);
       throw error;
     }
 
@@ -283,7 +276,6 @@ class TaskService {
       });
     } catch (error) {
       logger.error("Error fetching assigned task details: " + error.message);
-      console.log("Error fetching assigned task details: ", error.message);
       throw error;
     }
   }

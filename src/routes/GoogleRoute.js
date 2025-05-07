@@ -114,7 +114,7 @@ router.get("/redirect", async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Error during authentication:", error);
+    logger.error(`Authentication failed: ${error.message}`);
     const errorResponse = {
       success: false,
       redirectUrl: "/",

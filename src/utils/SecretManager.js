@@ -27,7 +27,7 @@ async function getSecret(secretName) {
 
     return secretData; // Return the fetched secret data
   } catch (err) {
-    console.error(`Failed to access secret ${secretName}:`, err.message);
+    logger.error(`Failed to access secret ${secretName}: ${err.message}`);
     throw new Error(`Error fetching secret: ${secretName}`);
   }
 }

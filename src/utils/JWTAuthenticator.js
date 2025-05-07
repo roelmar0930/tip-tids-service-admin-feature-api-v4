@@ -6,8 +6,6 @@ require('dotenv').config();
 const jwtAuthenticator = (req, res, next) => {
     const token = req.header('Authorization').replace('Bearer ', '');
     if (!token) {
-        //logger.error('Access denied. No token provided.');
-        console.log('Access denied. No token provided.');
         return res.status(401).send({ error: 'Access denied. No token provided.' });
     }
 
@@ -17,12 +15,7 @@ const jwtAuthenticator = (req, res, next) => {
         req.user = decoded;
         next();
     } catch (ex) {
-        //logger.error(ex);
-        console.log('Invalid token.');
         res.status(400).send({ error: 'Invalid token.' });
-
-        //bypass token verification
-        //next();
     }
 };
 

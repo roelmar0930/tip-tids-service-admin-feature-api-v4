@@ -4,6 +4,7 @@ const creds = require("./creds.json");
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const logger = require('./utils/Logger');
 
 //load environment variables
 require('dotenv').config();
@@ -17,11 +18,9 @@ if (!secretKey) {
 const connectDB = async () => {
     const db_uri = "mongodb://127.0.0.1:27017/tip";
     try {
-        console.log(db_uri);
         await mongoose.connect(db_uri);
-        console.log('MongoDB connected...');
     } catch (err) {
-        console.error(err.message);
+        logger.error(`MongoDB connection failed: ${err.message}`);
         process.exit(1);
     }
 };
@@ -44,14 +43,11 @@ app.post('/register', async (req, res) => {
 
         const oldUser = await TestUser.findOne({email: email});
         if (oldUser) {
-            console.log('User already exists');
             return res.status(400).json({ error: 'User already exists' });
         }   
         await newUser.save();
-        console.log('User registered successfully');
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
-        console.log(error.message);
         res.status(500).json({ error: error.message });
     }
 });
@@ -62,27 +58,21 @@ app.post('/login', async (req, res) => {
         const { email, password } = req.body;
         const user = await TestUser.findOne({ email: email });
         if (!user) {
-            console.log('Invalid credentials');
             return res.status(400).json({ error: 'Invalid credentials' });
         }
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            console.log('Invalid credentials');
             return res.status(400).json({ error: 'Invalid credentials' });
         }
         const token = jwt.sign({ userId: user._id }, creds.web.client_secret, { expiresIn: '1h' });
-        console.log('Login Successful');
         res.json({ token });
     } catch (error) {
-        console.log(error.message);
         res.status(500).json({ error: error.message });
     }
 });
 
 connectDB().then(() => {
-    app.listen(port, () => {
-        console.log(`Server is running on http://localhost:${port}`);
-    });
+    app.listen(port, () => {});
 }).catch((err) => {
     process.exit(1);
 });
