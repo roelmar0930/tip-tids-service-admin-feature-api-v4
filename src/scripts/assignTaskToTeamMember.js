@@ -9,7 +9,7 @@ async function assignTaskToAllTeamMembers() {
     // Get command line arguments
     const args = process.argv.slice(2);
     if (args.length !== 1) {
-      console.error('Usage: node assignTaskToTeamMember.js <taskId>');
+      logger.error('Usage: node assignTaskToTeamMember.js <taskId>');
       process.exit(1);
     }
 
@@ -20,19 +20,19 @@ async function assignTaskToAllTeamMembers() {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
-    console.log('Connected to MongoDB');
+    logger.info('Connected to MongoDB');
 
     // Check if the task exists
     const task = await Task.findOne({ id: parseInt(taskId) });
     if (!task) {
-      console.error('Task does not exist');
+      logger.error('Task does not exist');
       process.exit(1);
     }
 
     // Get all team members
     const teamMembers = await TeamMember.find({});
     if (teamMembers.length === 0) {
-      console.error('No team members found');
+      logger.error('No team members found');
       process.exit(1);
     }
 
@@ -45,7 +45,7 @@ async function assignTaskToAllTeamMembers() {
       });
 
       if (existingTask) {
-        console.log(`Task already assigned to team member: ${teamMember.workEmailAddress}`);
+        logger.info(`Task already assigned to team member: ${teamMember.workEmailAddress}`);
       } else {
         const newTaskAssignment = new TeamMemberTask({
           taskId: parseInt(taskId),
@@ -55,16 +55,16 @@ async function assignTaskToAllTeamMembers() {
         });
 
         await newTaskAssignment.save();
-        console.log(`Task assigned successfully to: ${teamMember.workEmailAddress}`);
+        logger.info(`Task assigned successfully to: ${teamMember.workEmailAddress}`);
       }
     }
 
   } catch (error) {
-    console.error('Error:', error.message);
+    logger.error(`Error assigning tasks: ${error.message}`);
   } finally {
     // Close MongoDB connection
     await mongoose.connection.close();
-    console.log('MongoDB connection closed');
+    logger.info('MongoDB connection closed');
   }
 }
 

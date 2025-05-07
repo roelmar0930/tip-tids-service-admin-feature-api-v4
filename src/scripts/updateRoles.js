@@ -8,11 +8,11 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log("Connected to MongoDB");
+    logger.info("Connected to MongoDB");
     updateRoles(); // Run the update function after connection
   })
   .catch((err) => {
-    console.error("Error connecting to MongoDB:", err);
+    logger.error(`Error connecting to MongoDB: ${err.message}`);
   });
 
 async function updateRoles() {
@@ -22,7 +22,7 @@ async function updateRoles() {
       { jobProfile: { $regex: "manager", $options: "i" } }, // Case-insensitive regex
       { $set: { role: "teamManager" } }
     );
-    console.log(`${managerResult.modifiedCount} documents updated to teamManager`);
+    logger.info(`${managerResult.modifiedCount} documents updated to teamManager`);
 
     // Update role to 'teamLeader' if jobProfile contains 'leader'
     const leaderResult = await TeamMember.updateMany(
@@ -34,7 +34,7 @@ async function updateRoles() {
       }, 
       { $set: { role: "teamLeader" } }
     );
-    console.log(`${leaderResult.modifiedCount} documents updated to teamLeader`);
+    logger.info(`${leaderResult.modifiedCount} documents updated to teamLeader`);
 
     const pocResult = await TeamMember.updateMany(
       {
@@ -45,7 +45,7 @@ async function updateRoles() {
       },
       { $set: { role: "admin" } }
     );
-    console.log(`${pocResult.modifiedCount} documents updated to admin`);
+    logger.info(`${pocResult.modifiedCount} documents updated to admin`);
 
 
     // Set role to 'teamMember' for all remaining records
@@ -57,9 +57,9 @@ async function updateRoles() {
       },
       { $set: { role: "teamMember" } }
     );
-    console.log(`${remainingResult.modifiedCount} documents updated to teamMember`);
+    logger.info(`${remainingResult.modifiedCount} documents updated to teamMember`);
   } catch (error) {
-    console.error("Error updating roles:", error);
+    logger.error(`Error updating roles: ${error.message}`);
   } finally {
     mongoose.disconnect();
   }

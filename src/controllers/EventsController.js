@@ -14,9 +14,15 @@ const createEvent = async (req, res, next) => {
   const imageFile = req.file;
   try {
     const event = await EventsService.createEvent(eventData, imageFile, req.timeZone);
-    await EventsService.bulkInviteTeamMemberEvent(event.id);
-
-    res.status(200).json(event);
+    
+    // If specific team members are provided, invite only them, otherwise invite all
+    const teamMembers = eventData.teamMembers ? JSON.parse(eventData.teamMembers) : [];
+    const result = await EventsService.bulkInviteEvent(event._id, teamMembers);
+    
+    res.status(200).json({
+      event,
+      inviteResult: result
+    });
   } catch (error) {
     next(error);
   }
@@ -27,9 +33,15 @@ const updateEvent = async (req, res, next) => {
   const imageFile = req.file;
   try {
     const event = await EventsService.updateEvent(updatedDetails, imageFile, req.timeZone);
-    await EventsService.bulkInviteTeamMemberEvent(event.id);
     
-    res.status(200).send(event);
+    // If specific team members are provided, invite only them, otherwise invite all
+    const teamMembers = updatedDetails.teamMembers ? JSON.parse(updatedDetails.teamMembers) : [];
+    const result = await EventsService.bulkInviteEvent(event._id, teamMembers);
+    
+    res.status(200).json({
+      event,
+      inviteResult: result
+    });
   } catch (error) {
     next(error);
   }
@@ -79,8 +91,23 @@ const getTeamMemberEvent = async (req, res, next) => {
 
 const getEventDetails = async (req, res, next) => {
   try {
-    const event = await EventsService.getEventDetails(req.params.id, req.timeZone);
-    res.status(200).json(event);
+    const eventWithInvitees = await EventsService.getEventDetails(req.params.id, req.timeZone);
+    res.status(200).json(eventWithInvitees);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const bulkAssignEvent = async (req, res, next) => {
+  try {
+    const { eventId } = req.params;
+    const { teamMembers } = req.body;
+    
+    const result = await EventsService.bulkInviteEvent(eventId, teamMembers || []);
+    res.status(200).json({ 
+      message: `Successfully invited ${result.invitedCount} team members to event (${result.mode} mode)`,
+      result
+    });
   } catch (error) {
     next(error);
   }
@@ -94,5 +121,6 @@ module.exports = {
   inviteTeamMember,
   updateInviteTeamMember,
   getTeamMemberEvent,
-  getEventDetails
+  getEventDetails,
+  bulkAssignEvent
 };

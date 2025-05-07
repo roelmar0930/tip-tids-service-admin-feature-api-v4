@@ -10,6 +10,5 @@ module.exports = function timeZone(req, res, next) {
   }
 
   req.timeZone = timeZone;
-  console.log(`Time zone set to: ${timeZone}`);
   next();
 };

@@ -40,22 +40,20 @@ async function updateRegistrationCodes() {
       registrationCode: { $in: ["", null, undefined] },
     });
 
-    console.log(`Found ${docs.length} documents to update`);
+    logger.info(`Found ${docs.length} documents to update`);
 
     for (const doc of docs) {
       if (!doc.title) {
-        console.log(
-          `Skipping document with ID ${doc._id} because title is missing`
-        );
+        logger.warn(`Skipping document with ID ${doc._id} because title is missing`);
         continue;
       }
 
       const newCode = generateUniqueCode(doc.title);
 
-      console.log(`Processing document with ID ${doc._id}`);
-      console.log(`Event Title: ${doc.title}`);
-      console.log(`Old registrationCode: ${doc.registrationCode}`);
-      console.log(`New registrationCode: ${newCode}`);
+      logger.info(`Processing document with ID ${doc._id}`);
+      logger.info(`Event Title: ${doc.title}`);
+      logger.info(`Old registrationCode: ${doc.registrationCode}`);
+      logger.info(`New registrationCode: ${newCode}`);
 
       const result = await Event.findByIdAndUpdate(
         doc._id,
@@ -63,16 +61,12 @@ async function updateRegistrationCodes() {
         { new: true }
       );
 
-      console.log(
-        `Update result for document ${doc._id}: ${
-          result ? "Updated" : "Not Found"
-        }`
-      );
+      logger.info(`Update result for document ${doc._id}: ${result ? "Updated" : "Not Found"}`);
     }
 
-    console.log("Update complete");
+    logger.info("Update complete");
   } catch (error) {
-    console.error("Error updating registration codes:", error);
+    logger.error(`Error updating registration codes: ${error.message}`);
   } finally {
     mongoose.connection.close();
   }

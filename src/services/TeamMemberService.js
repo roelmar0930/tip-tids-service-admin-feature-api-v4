@@ -188,7 +188,11 @@ class TeamMemberService {
       }
 
       // Terminate team members that exist in the database but not in the CSV
-      for (const workdayId of existingWorkdayIds) {
+      for (const workdayId of Array.from(existingWorkdayIds)) {
+        const teamMember = await TeamMember.findOne({ workdayId });
+        if (teamMember && teamMember.status === "terminated") {
+          continue;
+        }
         await TeamMember.updateOne(
           { workdayId },
           { $set: { status: "terminated", updatedAt: new Date() } }

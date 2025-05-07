@@ -5,12 +5,6 @@ const logger = require("../utils/Logger");
 class ImageService {
   async uploadImage(imageBuffer, fileName) {
     try {
-      console.log(
-        "Uploading image:",
-        fileName,
-        "Buffer size:",
-        imageBuffer.length
-      );
       const file = bucket.file(fileName);
       await file.save(imageBuffer);
     } catch (error) {
@@ -20,26 +14,20 @@ class ImageService {
 
   async deleteImage(fileName) {
     try {
-      console.log("Checking for image:", fileName);
       const file = bucket.file(fileName);
 
       // Check if the file exists
       const [exists] = await file.exists();
       if (!exists) {
-        logger.info("Image not found:" + fileName);
-        console.log("Image not found:", fileName);
+        logger.info(`Image not found: ${fileName}`);
         return;
       }
 
       // File exists, proceed with deletion
-      logger.info("Deleting image:" + fileName);
-      console.log("Deleting image:", fileName);
       await file.delete();
-      logger.info("Image successfully deleted:" + fileName);
-      console.log("Image successfully deleted:", fileName);
+      logger.info(`Image successfully deleted: ${fileName}`);
     } catch (error) {
-      logger.error("Error deleting image:" + error.message);
-      console.error("Error deleting image:", error.message);
+      logger.error(`Error deleting image: ${error.message}`);
       throw error; // Re-throw the error if needed
     }
   }

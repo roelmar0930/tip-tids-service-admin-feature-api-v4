@@ -13,16 +13,16 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    console.log('Connected to MongoDB');
+    logger.info('Connected to MongoDB');
     const filePath = process.argv[2];
     if (!filePath) {
-      console.error('Please provide a CSV file path.');
+      logger.error('Please provide a CSV file path.');
       process.exit(1);
     }
     updateCollectionFromCSV(filePath);
   })
   .catch((err) => {
-    console.error('Error connecting to MongoDB:', err);
+    logger.error(`Error connecting to MongoDB: ${err.message}`);
   });
 
 // Function to update or add a team member
@@ -52,7 +52,7 @@ async function updateTeamMember(member, stats) {
 
 // Function to update the collection from CSV
 async function updateCollectionFromCSV(filePath) {
-  console.log('Starting update from CSV...');
+  logger.info('Starting update from CSV...');
   const results = [];
   const stats = { updated: 0, added: 0 };
   fs.createReadStream(filePath)
@@ -64,10 +64,10 @@ async function updateCollectionFromCSV(filePath) {
         if (workEmailAddress && workdayId) {
           await updateTeamMember(row, stats);
         } else {
-          console.warn(`Missing workEmailAddress or workdayId for row: ${JSON.stringify(row)}`);
+          logger.warn(`Missing workEmailAddress or workdayId for row: ${JSON.stringify(row)}`);
         }
       }
-      console.log(`Update from CSV completed. ${stats.updated} records updated, ${stats.added} records added.`);
+      logger.info(`Update from CSV completed. ${stats.updated} records updated, ${stats.added} records added.`);
       mongoose.disconnect();
     });
 }

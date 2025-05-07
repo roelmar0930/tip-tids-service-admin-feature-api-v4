@@ -8,9 +8,9 @@ module.exports = (err, req, res, next) => {
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
   // Log the error
-  console.error(status, err.message);
+  logger.error(`${status}: ${err.message}`);
   if (err.stack) {
-    console.error(err.stack);
+    logger.error(err.stack);
   }
 
   // Send JSON response
