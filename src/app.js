@@ -7,7 +7,7 @@ const logger = require("./utils/Logger");
 const cors = require("cors");
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpecs = require('./config/swaggerConfig');
-require("./database");
+const mongoose = require("mongoose");
 
 // Middleware
 const ErrorHandler = require("./middleware/ErrorHandler");
@@ -23,7 +23,13 @@ const TeamMemberRouter = require("./routes/TeamMemberRoute");
 const ReportRouter = require("./routes/ReportRoute");
 const ScheduleJobs = require("./schedule/ScheduleJobs");
 
-const app = express();
+async function initializeApp() {
+  try {
+    // Wait for database initialization
+    await require("./database");
+    logger.info("Database initialization completed");
+
+    const app = express();
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -78,4 +84,14 @@ app.use(ErrorHandler);
 
 ScheduleJobs();
 
-module.exports = app;
+    return app;
+  } catch (error) {
+    logger.error(`Failed to initialize application: ${error.message}`);
+    throw error;
+  }
+}
+
+module.exports = initializeApp().catch(error => {
+  logger.error(`Failed to initialize application: ${error.message}`);
+  process.exit(1);
+});

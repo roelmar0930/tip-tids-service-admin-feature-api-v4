@@ -1,8 +1,9 @@
 const mongoose = require("mongoose");
-const getConfig = require("./config/config"); // Import the async config function
+const getConfig = require("./config/config");
 const logger = require("./utils/Logger");
 
-async function initializeDatabase() {
+// Create a promise that resolves when the database is connected
+const databaseConnection = (async () => {
   try {
     // Get the configuration which includes the database URI
     const config = await getConfig();
@@ -12,30 +13,29 @@ async function initializeDatabase() {
     await mongoose.connect(databaseUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
     });
 
     logger.info("MongoDB connected successfully");
-    mongoose.connection.db.listCollections().toArray((err, names) => {
-      if (err) {
-        logger.error(`Error listing collections: ${err.message}`);
-      }
+
+    // Set up event listeners
+    mongoose.connection.on("close", () => {
+      logger.info("MongoDB connection closed");
     });
 
+    mongoose.connection.on("error", (error) => {
+      logger.error(`MongoDB connection error: ${error.message}`);
+    });
+
+    // List collections after successful connection
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    logger.info(`Available collections: ${collections.map(c => c.name).join(', ')}`);
+
+    return mongoose.connection;
   } catch (error) {
     logger.error(`Database initialization failed: ${error.message}`);
-    process.exit(1); // Exit if database connection fails
+    throw error; // Let the error propagate to be handled by the app
   }
-}
+})();
 
-// Call the initialization function to connect to the database
-initializeDatabase();
-
-// Event listener for connection closed
-mongoose.connection.on("close", () => {
-  logger.info("MongoDB connection closed");
-});
-
-// Event listener for connection errors
-mongoose.connection.on("error", (error) => {
-  logger.error(`MongoDB connection error: ${error.message}`);
-});
+module.exports = databaseConnection;
