@@ -22,6 +22,7 @@ async function addPointsForCompletedEvent(eventId) {
     }
 
     for (const teamMember of teamMemeberEvents) {
+      
       await awardPointsToTeamMember(teamMember, points, category);
     }
   } catch (error) {

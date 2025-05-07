@@ -4,6 +4,7 @@ const ImageService = require("../services/ImageService");
 const createHttpError = require("http-errors");
 const logger = require("../utils/Logger");
 const { convertToTimezone } = require("../utils/DateUtils");
+const UniqueCodeUtils = require("../utils/UniqueCodeUtils");
 const TeamMemberService= require("../services/TeamMemberService");
 const TeamMember = require("../models/TeamMember");
 
@@ -14,7 +15,7 @@ const convertDatesToTimezone = (event, timezone) => {
   const converted = { ...event._doc || event };
   
   // Convert date fields
-  const dateFields = ['startDate', 'endDate', 'createdAt', 'updatedAt'];
+  const dateFields = ['startDate', 'endDate', 'createdAt', 'updatedAt', 'invitedDate'];
   dateFields.forEach(field => {
     if (converted[field]) {
       converted[field] = convertToTimezone(converted[field], timezone);
@@ -73,7 +74,7 @@ class EventsService {
       const event = new Event({
         ...eventData,
         imageFilename,
-        qrCodeUrl: eventData.qrCodeUrl,
+        registrationCode: UniqueCodeUtils.generateUniqueCode(title),
       });
 
       // Save the event
@@ -133,38 +134,74 @@ class EventsService {
     }
   }
 
-  async bulkInviteTeamMemberEvent(id) {
+  async bulkInviteEvent(eventId, specificTeamMembers = []) {
     try {
-      const teamMembers = await TeamMember.find({});
-      const existingInvites = await TeamMemberEvent.find({ eventId: id });
-      
-      const existingInviteSet = new Set(
-        existingInvites.map(invite => `${invite.teamMemberWorkdayId}-${invite.email}`)
+      console.log(eventId)
+      const event = await Event.findById(eventId);
+      if (!event) {
+        throw new createHttpError(404, "Event not found");
+      }
+
+      // Get all existing assignments for this event
+      const existingAssignments = await TeamMemberEvent.find({ eventId: event.id });
+      const existingAssignmentSet = new Set(
+        existingAssignments.map(assignment => `${assignment.teamMemberWorkdayId}-${assignment.teamMemberEmail}`)
       );
 
-      let newTeamMemberEvents = [];
+      let newAssignments = [];
 
-      for (const member of teamMembers) {
-        const key = `${member.workdayId}-${member.workEmailAddress}`;
-        if (!existingInviteSet.has(key)) {
-          newTeamMemberEvents.push({
-            eventId: id,
-            teamMemberWorkdayId: member.workdayId,
-            teamMemberEmail: member.email
-          });
+      if (specificTeamMembers.length > 0) {
+        // If specific team members are provided, only invite them
+        for (const member of specificTeamMembers) {
+          const key = `${member.workdayId}-${member.email}`;
+          if (!existingAssignmentSet.has(key)) {
+            // Verify if the team member is available
+            const teamMember = await TeamMember.findOne({ workdayId: member.workdayId, email: member.email });
+            if (teamMember) {
+              newAssignments.push({
+              eventId: event.id,
+              teamMemberWorkdayId: teamMember.workdayId,
+              teamMemberEmail: teamMember.email,
+              status: "unregistered",
+              invitedDate: new Date()
+              });
+            } else if (teamMember.status === "terminated") {
+              logger.info(`Team member ${member.workdayId} is TERMINATED and cannot be invited.`);
+            } else {
+              logger.info(`Team member ${member.workdayId} is not available for invitation.`);
+            }
+          }
+        }
+      } else {
+        // If no specific team members are provided, invite all team members
+        const allTeamMembers = await TeamMember.find({});
+        for (const member of allTeamMembers.filter(m => m.status !== "terminated")) {
+          const key = `${member.workdayId}-${member.email}`;
+          if (!existingAssignmentSet.has(key)) {
+            newAssignments.push({
+              eventId: event.id,
+              teamMemberWorkdayId: member.workdayId,
+              teamMemberEmail: member.email,
+              status: "unregistered",
+              invitedDate: new Date()
+            });
+          }
         }
       }
 
-      if (newTeamMemberEvents.length > 0) {
-        await TeamMemberEvent.insertMany(newTeamMemberEvents);
-        logger.info(`Bulk invited ${newTeamMemberEvents.length} new team members to event ${id}`);
+      if (newAssignments.length > 0) {
+        await TeamMemberEvent.insertMany(newAssignments);
+        logger.info(`Bulk invited ${newAssignments.length} team members to event ${eventId}`);
       } else {
-        logger.info(`No new team members to invite for event ${id}`);
+        logger.info(`No new team members to invite for event ${eventId}`);
       }
 
-      return newTeamMemberEvents.length;
+      return {
+        invitedCount: newAssignments.length,
+        mode: specificTeamMembers.length > 0 ? 'specific' : 'all'
+      };
     } catch (error) {
-      logger.error(`Error in bulkInviteTeamMemberEvent: ${error.message}`);
+      logger.error(`Error in bulkInviteEvent: ${error.message}`);
       throw error;
     }
   }
@@ -315,19 +352,44 @@ class EventsService {
     }
   }
 
-  async getEventDetails(id, timezone = 'UTC') {
-    try {
-      const event = await Event.findById(id);
-      if (!event) {
-        throw new createHttpError(404, "Event not found");
-      }
-      return convertDatesToTimezone(event, timezone);
-    } catch (error) {
-      logger.error("Error fetching event details: " + error.message);
-      throw error;
+async getEventDetails(id, timezone = 'UTC') {
+  try {
+    const event = await Event.findById(id);
+    if (!event) {
+      throw new createHttpError(404, "Event not found");
     }
+    
+    // Fetch invited team members for this event
+    const invitedTeamMembers = await TeamMemberEvent.find({ eventId: event.id });
+    
+    // Get full details of invited team members
+    const teamMemberDetails = await Promise.all(
+      invitedTeamMembers.map(async (member) => {
+        const teamMember = await TeamMember.findOne({ 
+          workdayId: member.teamMemberWorkdayId,
+          email: member.teamMemberEmail
+        });
+
+        return {
+          name: teamMember.firstName + " " + teamMember.lastName + (teamMember.suffix ? ` ${teamMember.suffix}` : ""),
+          email: teamMember.email,
+          workdayId: teamMember.workdayId,
+          invitedDate: member.invitedDate,
+        };
+      })
+    );
+
+    const eventWithInvitees = {
+      ...convertDatesToTimezone(event, timezone),
+      invitedTeamMembers: teamMemberDetails.map(member => convertDatesToTimezone(member, timezone))
+    };
+
+    return eventWithInvitees;
+  } catch (error) {
+    logger.error("Error fetching event details: " + error.message);
+    throw error;
   }
-  
+}
 }
 
 module.exports = new EventsService();

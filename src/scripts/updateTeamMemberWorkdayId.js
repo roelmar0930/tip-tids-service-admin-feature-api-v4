@@ -1,12 +1,13 @@
 const mongoose = require('mongoose');
 const config = require('../config/config');
 const TeamMemberTask = require('../models/TeamMemberTask');
+const TeamMemberEvent = require('../models/TeamMemberEvent');
 const TeamMember = require('../models/TeamMember');
 
 async function updateTeamMemberWorkdayId() {
   try {
     // Connect to MongoDB
-    await mongoose.connect(config.mongoUrl, {
+    await mongoose.connect("mongodb://localhost:27017/tip", {
       useNewUrlParser: true,
       useUnifiedTopology: true
     });
@@ -20,7 +21,7 @@ async function updateTeamMemberWorkdayId() {
     }
 
     // Update TeamMemberTask entries with missing workdayId
-    const updatedTasks = await TeamMemberTask.updateMany(
+    const updatedTasks = await TeamMemberEvent.updateMany(
       { teamMemberWorkdayId: { $exists: false } },
       [
         {
@@ -33,7 +34,7 @@ async function updateTeamMemberWorkdayId() {
                       {
                         $filter: {
                           input: teamMembers,
-                          cond: { $eq: ["$$this.workEmailAddress", "$teamMemberEmail"] }
+                          cond: { $eq: ["$$this.email", "$teamMemberEmail"] }
                         }
                       },
                       0

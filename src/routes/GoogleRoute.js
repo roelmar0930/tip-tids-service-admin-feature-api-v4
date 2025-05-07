@@ -74,6 +74,19 @@ router.get("/redirect", async (req, res) => {
       });
     }
 
+    // Check if the user is a terminal user
+    if (teamMemberInfo.role === "terminal") {
+      return res.status(403).json({
+        success: false,
+        redirectUrl: "/",
+        error: {
+          message: "Access denied",
+          details: "User is terminated"
+        }
+      });
+    }
+
+
     // Generate JWT with user data including team member info
     const jwt_token = generateJWT({
       name,
