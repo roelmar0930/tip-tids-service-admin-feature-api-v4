@@ -4,7 +4,7 @@ const creds = require("../creds.json");
 const cookieParser = require("cookie-parser");
 const jwt = require('jsonwebtoken');
 const TeamMember = require("../models/TeamMember");
-const logger = require("../utils/logger");
+const logger = require("../utils/Logger");
 
 const app = express();
 const router = express.Router();
