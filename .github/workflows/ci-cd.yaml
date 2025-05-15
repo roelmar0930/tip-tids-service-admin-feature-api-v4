@@ -51,11 +51,8 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           export_default_credentials: true
 
-      # Note: Container Registry to Artifact Registry migration must be performed manually by an admin
-      # using: gcloud artifacts docker upgrade migrate --project=PROJECT_ID
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker
           gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
 
       - name: Set environment variables for PRODUCTION
