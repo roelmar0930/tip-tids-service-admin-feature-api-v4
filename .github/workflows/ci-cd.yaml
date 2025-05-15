@@ -51,8 +51,11 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           export_default_credentials: true
 
-      - name: Configure Docker
-        run: gcloud auth configure-docker
+      - name: Configure Docker and Migrate to Artifact Registry
+        run: |
+          gcloud auth configure-docker
+          gcloud auth configure-docker ${{ secrets.GCP_REGION }}-docker.pkg.dev
+          gcloud artifacts docker upgrade migrate --project=${{ secrets.GCP_PROJECT_ID }}
 
       - name: Set environment variables for PRODUCTION
         if: github.event.inputs.environment == 'production'
@@ -78,7 +81,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          IMAGE_TAG=gcr.io/${{ secrets.GCP_PROJECT_ID }}/$REACT_APP_ENV-$SERVICE_NAME:${{ github.sha }}
+          IMAGE_TAG=${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-repo/$REACT_APP_ENV-$SERVICE_NAME:${{ github.sha }}
           docker build --build-arg NODE_ENV=${{ github.event.inputs.environment }} \
                        --build-arg CREDS_JSON=${{ env.CREDS_JSON }} \
                        --build-arg ENGAGEMENT_APP_KEY_JSON=${{ env.ENGAGEMENT_APP_KEY_JSON }} \
@@ -88,7 +91,7 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy $REACT_APP_ENV-$SERVICE_NAME \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/$REACT_APP_ENV-$SERVICE_NAME:${{ github.sha }} \
+            --image ${{ secrets.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/docker-repo/$REACT_APP_ENV-$SERVICE_NAME:${{ github.sha }} \
             --platform managed \
             --region ${{ secrets.GCP_REGION }} \
             --allow-unauthenticated \
