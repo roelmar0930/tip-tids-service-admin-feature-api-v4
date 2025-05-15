@@ -17,6 +17,18 @@ metadata:
 description: Testing environment
 run:
   location: projects/${PROJECT_ID}/locations/${REGION}
+  serviceAccount: ${SERVICE_ACCOUNT}
+  executionConfigs:
+  - usages: ["RENDER", "DEPLOY"]
+    serviceAccount: ${SERVICE_ACCOUNT}
+  cloudRun:
+    resources:
+      limits:
+        cpu: "1"
+        memory: 512Mi
+    containerConcurrency: 80
+    timeoutSeconds: 300
+    allowUnauthenticated: true
 ---
 apiVersion: deploy.cloud.google.com/v1
 kind: Target
@@ -25,3 +37,18 @@ metadata:
 description: Production environment
 run:
   location: projects/${PROJECT_ID}/locations/${REGION}
+  serviceAccount: ${SERVICE_ACCOUNT}
+  executionConfigs:
+  - usages: ["RENDER", "DEPLOY"]
+    serviceAccount: ${SERVICE_ACCOUNT}
+  cloudRun:
+    resources:
+      limits:
+        cpu: "2"
+        memory: 1Gi
+    containerConcurrency: 100
+    timeoutSeconds: 300
+    allowUnauthenticated: true
+    traffic:
+      - percent: 100
+        type: TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST
