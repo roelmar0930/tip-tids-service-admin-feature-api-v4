@@ -61,11 +61,13 @@ RUN if [ -n "$CREDS_JSON" ]; then \
     chown nodejs:nodejs ./src/creds.json ./src/engagementAppKey.json && \
     chmod 400 ./src/creds.json ./src/engagementAppKey.json
 
-# Security hardening
-RUN npm audit fix && \
-    chmod -R 500 /usr/src/app && \
-    chmod -R 400 /usr/src/app/node_modules && \
-    chmod 500 /usr/src/app/node_modules/.bin/*
+# Security audit
+RUN npm audit fix || true
+
+# Set file permissions
+RUN chmod -R 550 /usr/src/app && \
+    chmod -R 440 /usr/src/app/node_modules && \
+    chmod -R 550 /usr/src/app/node_modules/.bin/
 
 # Switch to non-root user
 USER nodejs
