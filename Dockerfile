@@ -1,5 +1,5 @@
 # Build stage
-FROM node:14-slim AS builder
+FROM node:16-slim AS builder
 
 # Set working directory
 WORKDIR /usr/src/app
@@ -14,7 +14,7 @@ RUN npm ci --only=production
 COPY . .
 
 # Production stage
-FROM node:14-slim
+FROM node:16-slim
 
 # Install dumb-init and curl for proper signal handling and health checks
 RUN apt-get update && apt-get install -y --no-install-recommends dumb-init curl && rm -rf /var/lib/apt/lists/*
