@@ -23,7 +23,8 @@
   "author": "Eddison Paguia",
   "license": "ISC",
   "dependencies": {
-    "and": "^0.0.3",
+    "@google-cloud/secret-manager": "^6.0.1",
+    "@google-cloud/storage": "^7.16.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
@@ -55,8 +56,6 @@
   "devDependencies": {
     "@appnest/readme": "^1.1.20",
     "@eslint/js": "^9.26.0",
-    "@google-cloud/secret-manager": "^6.0.1",
-    "@google-cloud/storage": "^7.16.0",
     "@jest-mock/express": "^2.0.1",
     "cross-env": "^7.0.3",
     "eslint": "^9.26.0",
