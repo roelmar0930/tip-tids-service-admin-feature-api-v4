@@ -1,0 +1,27 @@
+apiVersion: deploy.cloud.google.com/v1
+kind: DeliveryPipeline
+metadata:
+  name: engagement-app-pipeline
+description: Delivery pipeline for Engagement App API V4
+serialPipeline:
+  stages:
+  - targetId: testing
+    profiles: []
+  - targetId: production
+    profiles: []
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: testing
+description: Testing environment
+run:
+  location: projects/${PROJECT_ID}/locations/${REGION}
+---
+apiVersion: deploy.cloud.google.com/v1
+kind: Target
+metadata:
+  name: production
+description: Production environment
+run:
+  location: projects/${PROJECT_ID}/locations/${REGION}
