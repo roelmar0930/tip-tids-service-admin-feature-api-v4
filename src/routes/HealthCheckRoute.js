@@ -1,51 +1,19 @@
-const express = require("express");
-const { checkStatus } = require("../controllers/HealthCheckController");
+const express = require('express');
+const logger = require('../utils/Logger');
+
 const router = express.Router();
 
-/**
- * @swagger
- * tags:
- *   name: Health Check
- *   description: API health check endpoints
- */
+router.get('/', (req, res) => {
+  // You can perform any checks or logic here to determine the health status
+  const isHealthy = true; // Example health check logic
 
-/**
- * @swagger
- * /healthcheck/status:
- *   get:
- *     summary: Check API health status
- *     tags: [Health Check]
- *     description: Returns the health status of the API. Used for monitoring and health checks.
- *     responses:
- *       200:
- *         description: API is healthy and functioning normally
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               required:
- *                 - status
- *               properties:
- *                 status:
- *                   type: string
- *                   enum: [ok]
- *                   description: Health status indicator
- *                   example: ok
- *       500:
- *         description: API is not healthy or experiencing issues
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               required:
- *                 - status
- *               properties:
- *                 status:
- *                   type: string
- *                   enum: [error]
- *                   description: Error status indicator
- *                   example: error
- */
-router.get("/status", checkStatus);
+  if (isHealthy) {
+    logger.info('Health check OK');
+    res.status(200).json({ status: 'ok' });
+  } else {
+    logger.info('Health check FAILED');
+    res.status(500).json({ status: 'error' });
+  }
+});
 
 module.exports = router;
