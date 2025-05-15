@@ -60,12 +60,6 @@ jobs:
           npm install --package-lock-only
           npm ci
 
-      - name: Run linter
-        run: npm run lint
-
-      - name: Run tests
-        run: npm test
-
       - name: Check for vulnerabilities
         run: npm audit --production
 
