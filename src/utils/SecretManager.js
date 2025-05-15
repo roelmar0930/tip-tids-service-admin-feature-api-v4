@@ -1,11 +1,14 @@
 const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
+const logger = require('./logger');
 
 // Create a client
+logger.info('Initializing Secret Manager client');
 const client = new SecretManagerServiceClient();
 
 // Function to fetch the latest enabled secret
 async function getSecret(secretName) {
-  const name = `projects/engagement-app-tids/secrets/${secretName}`;
+  const projectId = process.env.GCP_PROJECT_ID || 'engagement-app-tids';
+  const name = `projects/${projectId}/secrets/${secretName}`;
 
   try {
     // List all versions of the secret
@@ -28,6 +31,8 @@ async function getSecret(secretName) {
     return secretData; // Return the fetched secret data
   } catch (err) {
     logger.error(`Failed to access secret ${secretName}: ${err.message}`);
+    logger.error(`Project ID: ${projectId}`);
+    logger.error(`Full error: ${JSON.stringify(err)}`);
     throw new Error(`Error fetching secret: ${secretName}`);
   }
 }
