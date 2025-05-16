@@ -1,4 +1,6 @@
 // middleware/errorHandler.js
+const logger = require('../utils/Logger');
+
 module.exports = (err, req, res, next) => {
   // Set error status if not already set
   const status = err.status || 500;
