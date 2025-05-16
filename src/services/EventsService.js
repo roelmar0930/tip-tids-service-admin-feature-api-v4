@@ -5,7 +5,7 @@ const createHttpError = require("http-errors");
 const logger = require("../utils/Logger");
 const { convertToTimezone } = require("../utils/DateUtils");
 const UniqueCodeUtils = require("../utils/UniqueCodeUtils");
-const TeamMemberService= require("../services/TeamMemberService");
+const TeamMemberService = require("../services/TeamMemberService");
 const TeamMember = require("../models/TeamMember");
 
 // Helper function to convert dates to specified timezone
@@ -292,7 +292,7 @@ class EventsService {
       
       // Fetch team member details for the first workday ID
       const teamMember = workdayIds.length > 0 
-        ? await TeamMemberService.getTeamMember({ workdayId: workdayIds[0] })
+        ? await TeamMember.findOne({ workdayId: workdayIds[0] })
         : null;
 
       // Separate TeamMemberEvents into registered and unregistered
