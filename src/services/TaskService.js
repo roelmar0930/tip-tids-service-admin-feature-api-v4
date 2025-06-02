@@ -46,7 +46,7 @@ class TaskService {
    * @returns {void} - will perform bulk insert
    */  
   async bulkAssignTeamMemberTask(id) {
-    const teamMembers = await TeamMember.find({});
+    const teamMembers = await TeamMember.find({status: "active"});
 
     let teamMemberTasks = [];
 
