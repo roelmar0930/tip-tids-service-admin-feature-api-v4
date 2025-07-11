@@ -123,6 +123,7 @@ class ReportService {
         eventId: event._id,
         eventTitle: event.title,
         totalInvited: teamMembers.length,
+        targetCompliance: event.targetCompliance,
         invitedTeamMembers: teamMembers.map(tm => ({
           workdayId: tm.workdayId,
           email: tm.email,
