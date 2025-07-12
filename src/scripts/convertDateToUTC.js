@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { formatDateToUTC } = require('../utils/DateUtils');
+const { convertFromManilaUTCToUTC } = require('../utils/DateUtils');
 const Task = require('../models/Task');
 const TeamMemberTask = require('../models/TeamMemberTask');
 const Logger = require('../utils/Logger');
@@ -31,17 +31,17 @@ async function convertTaskDates() {
       let needsUpdate = false;
 
       if (task.dueDate) {
-        task.dueDate = new Date(formatDateToUTC(task.dueDate));
+        task.dueDate = new Date(convertFromManilaUTCToUTC(task.dueDate));
         needsUpdate = true;
       }
 
       if (task.createdAt) {
-        task.createdAt = new Date(formatDateToUTC(task.createdAt));
+        task.createdAt = new Date(convertFromManilaUTCToUTC(task.createdAt));
         needsUpdate = true;
       }
 
       if (task.updatedAt) {
-        task.updatedAt = new Date(formatDateToUTC(task.updatedAt));
+        task.updatedAt = new Date(convertFromManilaUTCToUTC(task.updatedAt));
         needsUpdate = true;
       }
 
@@ -66,17 +66,17 @@ async function convertTeamMemberTaskDates() {
       let needsUpdate = false;
 
       if (teamMemberTask.assignedDate) {
-        teamMemberTask.assignedDate = new Date(formatDateToUTC(teamMemberTask.assignedDate));
+        teamMemberTask.assignedDate = new Date(convertFromManilaUTCToUTC(teamMemberTask.assignedDate));
         needsUpdate = true;
       }
 
       if (teamMemberTask.startedDate) {
-        teamMemberTask.startedDate = new Date(formatDateToUTC(teamMemberTask.startedDate));
+        teamMemberTask.startedDate = new Date(convertFromManilaUTCToUTC(teamMemberTask.startedDate));
         needsUpdate = true;
       }
 
       if (teamMemberTask.completionDate) {
-        teamMemberTask.completionDate = new Date(formatDateToUTC(teamMemberTask.completionDate));
+        teamMemberTask.completionDate = new Date(convertFromManilaUTCToUTC(teamMemberTask.completionDate));
         needsUpdate = true;
       }
 
