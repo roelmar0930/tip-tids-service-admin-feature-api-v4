@@ -10,7 +10,8 @@
     "test": "jest",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "random-event-registration": "node src/scripts/randomTeamMemberEventRegistration.js"
+    "random-event-registration": "node src/scripts/randomTeamMemberEventRegistration.js",
+    "convert:dates": "node -r dotenv/config src/scripts/convertDateToUTC.js"
   },
   "repository": {
     "type": "git",

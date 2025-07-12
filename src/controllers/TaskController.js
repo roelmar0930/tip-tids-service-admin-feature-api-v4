@@ -9,7 +9,7 @@ const getTasks = async (req, res) => {
   try {
     const filters = req.body || {}; // Accept filters or default to an empty object
 
-    const tasks = await TaskService.getTasksByFilters(filters);
+    const tasks = await TaskService.getTasksByFilters(filters, req.timeZone);
 
     res.status(200).json(tasks);
   } catch (error) {
@@ -22,7 +22,7 @@ const createTask = async (req, res, next) => {
   try {
     const taskBody = req.body;
 
-    const task = await TaskService.createTask(taskBody);
+    const task = await TaskService.createTask(taskBody, req.timeZone);
     await TaskService.bulkAssignTeamMemberTask(task.id);
     res.status(200).json(task);
   } catch (error) {
@@ -32,7 +32,7 @@ const createTask = async (req, res, next) => {
 
 const updateTask = async (req, res, next) => {
   try {
-    const task = await TaskService.updateTask(req.body);
+    const task = await TaskService.updateTask(req.body, req.timeZone);
     res.status(200).send(task);
   } catch (error) {
     next(error);
@@ -76,7 +76,7 @@ const getAssignedTaskWithFilter = async (req, res, next) => {
   try {
     const filters = req.body || {}; 
 
-    const tasks = await TaskService.getAssignedTasksByFilters(filters);
+    const tasks = await TaskService.getAssignedTasksByFilters(filters, req.timeZone);
 
     res.status(200).json(tasks);
   } catch (error) {
@@ -91,7 +91,7 @@ const getAssignedTaskDetails = async (req, res) => {
       teamMemberEmail: req.query.teamMemberEmail,
       teamMemberWorkdayId: req.query.teamMemberWorkdayId
     };
-    const taskDetails = await TaskService.getAssignedTaskDetails(query);
+    const taskDetails = await TaskService.getAssignedTaskDetails(query, req.timeZone);
     res.status(200).json(taskDetails);
   } catch (error) {
     res.status(error.status || 500).json({ message: error.message });

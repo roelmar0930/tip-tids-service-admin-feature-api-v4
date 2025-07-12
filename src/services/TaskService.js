@@ -2,9 +2,25 @@ const Task = require("../models/Task");
 const logger = require("../utils/Logger");
 const TeamMemberTask = require("../models/TeamMemberTask");
 const TeamMember = require("../models/TeamMember");
-const { formatDateToManilaUTC } = require("../utils/DateUtils");
+const { convertToTimezone } = require("../utils/DateUtils");
 const createHttpError = require("http-errors");
 
+// Helper function to convert dates to specified timezone
+const convertDatesToTimezone = (task, timezone) => {
+  if (!task) return task;
+
+  const converted = { ...task._doc || task };
+  
+  // Convert date fields
+  const dateFields = ['startedDate', 'completionDate', 'createdAt', 'updatedAt', 'assignedDate', 'dueDate'];
+  dateFields.forEach(field => {
+    if (converted[field]) {
+      converted[field] = convertToTimezone(converted[field], timezone);
+    }
+  });
+  
+  return converted;
+};
 
 class TaskService {
 
@@ -14,7 +30,7 @@ class TaskService {
    * @param {Object} filters - Object containing filter criteria
    * @returns {Promise<Array<Object>>} - Array of task details
    */
-  async getTasksByFilters(filters = {}) {
+  async getTasksByFilters(filters = {}, timezone = 'UTC') {
     const query = {};
 
     if (filters.taskIds && filters.taskIds.length) {
@@ -31,7 +47,7 @@ class TaskService {
 
     try {
       const tasks = await Task.find(query);
-      return tasks;
+      return tasks.map(task => convertDatesToTimezone(task, timezone));
 
     }catch (error) {
       logger.error(`Error fetching task: ${error.message}`);
@@ -67,12 +83,12 @@ class TaskService {
    * @param {Object} taskData - Object containing task details
    * @returns {Promise<Object>} - Created task object
    */
-  async createTask(taskData) {
+  async createTask(taskData, timezone = 'UTC') {
     try {
       const task = new Task({ ...taskData });
       await task.save();
       logger.info(`Task created: ${task._id}`);
-      return task;
+      return convertDatesToTimezone(task, timezone);
     } catch (error) {
       logger.error(`Error creating task: ${error.message}`);
       throw error;
@@ -85,7 +101,7 @@ class TaskService {
    * @param {Object} updatedDetails - Object containing task update details
    * @returns {Promise<Object>} - Updated task object
    */
-  async updateTask(updatedDetails) {
+  async updateTask(updatedDetails, timezone = 'UTC') {
     try {
       const task = await Task.findOne({ id: updatedDetails.id });
 
@@ -97,7 +113,7 @@ class TaskService {
       await task.save();
 
       logger.info(`Task updated: ${task._id}`);
-      return task;
+      return convertDatesToTimezone(task, timezone);
     } catch (error) {
       throw error;
     }
@@ -185,13 +201,13 @@ class TaskService {
 
       // Ensure dates are set based on the new status
       if (taskBody.status === 'inProgress' && teamMemberTask.status !== 'inProgress') {
-        taskBody.startedDate = formatDateToManilaUTC(new Date()); // Add startedDate for inProgress
+        taskBody.startedDate = new Date(); // Add startedDate for inProgress
       } else if (taskBody.status === 'completed') {
         if (!teamMemberTask.startedDate) {
-          taskBody.startedDate = formatDateToManilaUTC(new Date()); // Add startedDate if missing
+          taskBody.startedDate = new Date(); // Add startedDate if missing
         }
         if (teamMemberTask.status !== 'completed') {
-          taskBody.completionDate = formatDateToManilaUTC(new Date()); // Add completionDate for completed
+          taskBody.completionDate = new Date(); // Add completionDate for completed
         }
       }
 
@@ -211,7 +227,7 @@ class TaskService {
    * @param {Object} filters - Object containing filter criteria
    * @returns {Promise<Array<Object>>} - Array of task details
    */
-  async getAssignedTasksByFilters(filters = {}) {
+  async getAssignedTasksByFilters(filters = {}, timezone = 'UTC') {
     const query = {};
 
     if (filters.taskIds && filters.taskIds.length) {
@@ -230,15 +246,13 @@ class TaskService {
       query.teamMemberWorkdayId = filters.teamMemberWorkdayId;
     }
 
-
     try {
       const tasks = await TeamMemberTask.find(query);
-      return tasks;
-    }catch (error) {
+      return tasks.map(task => convertDatesToTimezone(task, timezone));
+    } catch (error) {
       logger.error("Error fetching teamMemberTask: " + error.message);
       throw error;
     }
-
   }
 
   /**
@@ -247,7 +261,7 @@ class TaskService {
    * @param {Object} query - Query containing task and team member details
    * @returns {Promise<Array<Object>>} - Array of detailed assigned task objects
    */
-  async getAssignedTaskDetails(query) {
+  async getAssignedTaskDetails(query, timezone = 'UTC') {
     try {
 
       const teamMemberTasks = await TeamMemberTask.find({
@@ -269,10 +283,10 @@ class TaskService {
       return tasks.map(task => {
         const teamMemberDetails = teamMemberTasks.find(tmt => tmt.taskId === task.id).toObject();
         delete teamMemberDetails.taskId;
-        return {
+        return convertDatesToTimezone({
           ...task.toObject(),
           ...teamMemberDetails
-        };
+        }, timezone);
       });
     } catch (error) {
       logger.error("Error fetching assigned task details: " + error.message);

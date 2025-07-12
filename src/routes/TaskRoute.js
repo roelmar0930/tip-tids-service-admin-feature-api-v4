@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const taskController = require("../controllers/TaskController");
 const jwtAuthenticator = require('../utils/JWTAuthenticator');
+const timeZone = require('../middleware/timeZone');
 const {
   validateGetAllTasks,
 } = require("../middleware/validator/TaskValidator");
@@ -74,6 +75,13 @@ const {
  *     summary: Get tasks
  *     tags: [Tasks]
  *     description: Retrieve a list of tasks based on filters
+ *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *           default: UTC
+ *         description: Client's timezone (e.g., 'Asia/Shanghai', 'America/New_York'). Defaults to UTC if not provided.
  *     requestBody:
  *       required: true
  *       content:
@@ -104,6 +112,7 @@ const {
  */
 router.post(
     "/",
+    timeZone,
     validateGetAllTasks,
     taskController.getTasks
 );
@@ -115,6 +124,13 @@ router.post(
  *     summary: Create a new task
  *     tags: [Tasks]
  *     description: Create a new task and automatically assign it to team members
+ *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *           default: UTC
+ *         description: Client's timezone (e.g., 'Asia/Shanghai', 'America/New_York'). Defaults to UTC if not provided.
  *     requestBody:
  *       required: true
  *       content:
@@ -131,7 +147,7 @@ router.post(
  *       500:
  *         description: Internal server error
  */
-router.post("/createTask", taskController.createTask);
+router.post("/createTask", timeZone, taskController.createTask);
 
 /**
  * @swagger
@@ -140,6 +156,13 @@ router.post("/createTask", taskController.createTask);
  *     summary: Update an existing task
  *     tags: [Tasks]
  *     description: Update the details of an existing task
+ *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *           default: UTC
+ *         description: Client's timezone (e.g., 'Asia/Shanghai', 'America/New_York'). Defaults to UTC if not provided.
  *     requestBody:
  *       required: true
  *       content:
@@ -156,7 +179,7 @@ router.post("/createTask", taskController.createTask);
  *       500:
  *         description: Internal server error
  */
-router.patch("/updateTask", taskController.updateTask);
+router.patch("/updateTask", timeZone, taskController.updateTask);
 
 /**
  * @swagger
@@ -166,6 +189,12 @@ router.patch("/updateTask", taskController.updateTask);
  *     tags: [Tasks]
  *     description: Assign a specific task to a team member
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *           default: UTC
+ *         description: Client's timezone (e.g., 'Asia/Shanghai', 'America/New_York'). Defaults to UTC if not provided.
  *       - in: query
  *         name: taskId
  *         required: true
@@ -188,7 +217,7 @@ router.patch("/updateTask", taskController.updateTask);
  *       500:
  *         description: Internal server error
  */
-router.post("/assignTask", taskController.assignTask);
+router.post("/assignTask", timeZone, taskController.assignTask);
 
 /**
  * @swagger
@@ -198,6 +227,12 @@ router.post("/assignTask", taskController.assignTask);
  *     tags: [Tasks]
  *     description: Update the status of a task assigned to a team member
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *           default: UTC
+ *         description: Client's timezone (e.g., 'Asia/Shanghai', 'America/New_York'). Defaults to UTC if not provided.
  *       - in: query
  *         name: taskId
  *         required: true
@@ -224,7 +259,7 @@ router.post("/assignTask", taskController.assignTask);
  *       500:
  *         description: Internal server error
  */
-router.patch("/updateAssignedTask", taskController.updateAssignedTask);
+router.patch("/updateAssignedTask", timeZone, taskController.updateAssignedTask);
 
 /**
  * @swagger
@@ -233,6 +268,13 @@ router.patch("/updateAssignedTask", taskController.updateAssignedTask);
  *     summary: Get assigned tasks with filter
  *     tags: [Tasks]
  *     description: Retrieve a list of tasks assigned to a team member based on filters
+ *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *           default: UTC
+ *         description: Client's timezone (e.g., 'Asia/Shanghai', 'America/New_York'). Defaults to UTC if not provided.
  *     requestBody:
  *       required: true
  *       content:
@@ -259,7 +301,7 @@ router.patch("/updateAssignedTask", taskController.updateAssignedTask);
  *       500:
  *         description: Internal server error
  */
-router.post("/assignedTask", taskController.getAssignedTaskWithFilter);
+router.post("/assignedTask", timeZone, taskController.getAssignedTaskWithFilter);
 
 /**
  * @swagger
@@ -291,6 +333,12 @@ router.put("/deleteTask/:taskId", taskController.deleteTask);
  *     tags: [Tasks]
  *     description: Get detailed information about a task assigned to a team member
  *     parameters:
+ *       - in: header
+ *         name: x-timezone
+ *         schema:
+ *           type: string
+ *           default: UTC
+ *         description: Client's timezone (e.g., 'Asia/Shanghai', 'America/New_York'). Defaults to UTC if not provided.
  *       - in: query
  *         name: teamMemberEmail
  *         required: true
@@ -313,6 +361,6 @@ router.put("/deleteTask/:taskId", taskController.deleteTask);
  *       500:
  *         description: Internal server error
  */
-router.get("/getAssignedTaskDetails", taskController.getAssignedTaskDetails);
+router.get("/getAssignedTaskDetails", timeZone, taskController.getAssignedTaskDetails);
 
 module.exports = router;

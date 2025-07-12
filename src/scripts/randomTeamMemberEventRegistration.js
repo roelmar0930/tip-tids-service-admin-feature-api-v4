@@ -1,8 +1,8 @@
-const dotenv = require('dotenv');
-dotenv.config();
 
 const mongoose = require('mongoose');
 const TeamMemberEvent = require('../models/TeamMemberEvent');
+const dotenv = require('dotenv');
+dotenv.config();
 const getConfig = require('../config/config');
 
 // Possible event statuses
