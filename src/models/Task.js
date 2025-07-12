@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { formatDateToManilaUTC } = require("../utils/DateUtils");
 
 const taskSchema = new mongoose.Schema({
   id: {
@@ -34,7 +33,7 @@ const taskSchema = new mongoose.Schema({
   },
   createdAt: {
     type: Date,
-    default: formatDateToManilaUTC(new Date()),
+    default: Date.now,
     require: true,
   },
   createdBy: {

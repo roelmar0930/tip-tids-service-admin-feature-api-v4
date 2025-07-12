@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const { formatDateToManilaUTC } = require("../utils/DateUtils");
 
 const eventSchema = new mongoose.Schema({
   id: {
