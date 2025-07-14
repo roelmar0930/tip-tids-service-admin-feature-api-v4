@@ -1,6 +1,9 @@
 const Event = require('../models/Event');
 const TeamMemberEvent = require('../models/TeamMemberEvent');
 const TeamMember = require('../models/TeamMember');
+const { convertToTimezone } = require('../utils/DateUtils');
+
+
 
 class ReportService {
   static async getComplianceReport(eventId) {
@@ -57,7 +60,6 @@ class ReportService {
         averageTargetCompliance,
         eventReports,
         complianceStatus: overallCompliancePercentage >= averageTargetCompliance ? 'Met' : 'Not Met'
-
       };
     } catch (error) {
       throw new Error('Failed to generate all events compliance report: ' + error.message);
@@ -180,6 +182,50 @@ class ReportService {
       return report;
     } catch (error) {
       throw new Error('Failed to generate event report: ' + error.message);
+    }
+  }
+
+  static async getEventReportWithDetails(timezone = 'UTC') {
+    try {
+      const events = await Event.find().lean();
+      const teamMemberEvents = await TeamMemberEvent.find().lean();
+
+      // Calculate total events by category
+      // Get all unique categories from events
+      const categories = [...new Set(events.map(event => event.category))];
+      // Count events per category dynamically
+      const totalPerCategory = categories.reduce((acc, category) => {
+        acc[category] = events.filter(event => event.category === category && !event.isArchived).length;
+        return acc;
+      }, {});
+
+      const totalInvitedTeamMember = teamMemberEvents.length;
+
+      // Transform events to match the required format with timezone conversion
+      const listOfEvents = events.map(event => ({
+        _id: event._id.toString(),
+        id: event.id,
+        title: event.title,
+        category: event.category,
+        createdDate: convertToTimezone(event.createdAt || new Date(), timezone),
+        startDate: convertToTimezone(event.startDate, timezone),
+        endDate: convertToTimezone(event.endDate, timezone),
+        registeredTeamMembers: teamMemberEvents.filter(tme => tme.eventId.toString() === event.id.toString() && tme.status === 'registered').length,
+        unregisteredTeamMembers: teamMemberEvents.filter(tme => tme.eventId.toString() === event.id.toString() && tme.status === 'unregistered').length,
+      })).filter(event => !event.isArchived)
+
+      return {
+        totalEvents: events.filter(event => !event.isArchived).length,
+        totalActiveEvents: events.filter(event => event.status === 'active' && !event.isCompleted && !event.isArchived).length,
+        totalNotActiveEvents: events.filter(event => event.status === 'inactive' && !event.isCompleted && !event.isArchived).length,
+        totalCompletedEvents: events.filter(event => event.isCompleted && !event.isArchived).length,
+        
+        totalPerCategory,
+        totalInvitedTeamMember,
+        listOfEvents
+      };
+    } catch (error) {
+      throw new Error('Failed to generate event report with details: ' + error.message);
     }
   }
 }

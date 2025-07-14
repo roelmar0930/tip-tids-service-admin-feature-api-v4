@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ReportController = require('../controllers/ReportController');
+const timeZone = require('../middleware/timeZone');
 
 /**
  * @swagger
@@ -246,5 +247,73 @@ router.get('/event/:id/invitedTeamMember', ReportController.getEventInvitedTeamM
  *         description: Failed to generate compliance report
  */
 router.get('/event/compliance', ReportController.getComplianceReport);
+
+/**
+ * @swagger
+ * /report/event/details:
+ *   get:
+ *     summary: Get event details report
+ *     tags: [Reports]
+ *     description: Retrieve a detailed report of events with total events, events by category, and invited team members
+ *     parameters:
+ *       - in: header
+ *         name: X-Timezone
+ *         schema:
+ *           type: string
+ *           default: Asia/Shanghai
+ *         description: Timezone to convert dates to (e.g., Asia/Shanghai, UTC, etc.)
+ *     responses:
+ *       200:
+ *         description: Event details report retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalEvents:
+ *                   type: number
+ *                   description: Total number of events
+ *                 totalPerCategory:
+ *                   type: object
+ *                   description: Number of events per category
+ *                   properties:
+ *                     tids:
+ *                       type: number
+ *                     teamEvent:
+ *                       type: number
+ *                 totalInvitedTeamMember:
+ *                   type: number
+ *                   description: Total number of invited team members
+ *                 listOfEvents:
+ *                   type: array
+ *                   description: List of events with details
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                         description: Event MongoDB ID
+ *                       id:
+ *                         type: number
+ *                         description: Event ID
+ *                       category:
+ *                         type: string
+ *                         description: Event category
+ *                       createdDate:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Date when the event was created
+ *                       startDate:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Event start date
+ *                       endDate:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Event end date
+ *       500:
+ *         description: Failed to generate event details report
+ */
+router.get('/event/details', timeZone, ReportController.getEventReportWithDetails);
 
 module.exports = router;
