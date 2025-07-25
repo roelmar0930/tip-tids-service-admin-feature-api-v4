@@ -1,5 +1,7 @@
 const Event = require('../models/Event');
+const Task = require('../models/Task');
 const TeamMemberEvent = require('../models/TeamMemberEvent');
+const TeamMemberTask = require('../models/TeamMemberTask');
 const TeamMember = require('../models/TeamMember');
 const { convertToTimezone } = require('../utils/DateUtils');
 
@@ -228,6 +230,28 @@ class ReportService {
       throw new Error('Failed to generate event report with details: ' + error.message);
     }
   }
+
+  static async getTaskReport() {
+   try {
+      const teamMemberTasks = await TeamMemberTask.find().lean();
+      const archivedTasks = await Task.find({ isArchived: true }).lean();
+      const excludedTaskIds = archivedTasks.map(task => task.id);
+
+      return {
+        totalTaskAssignment: teamMemberTasks.filter(teamMemberTasks => 
+          !excludedTaskIds.includes(teamMemberTasks.taskId)).length,
+        totalCompletedTasks: teamMemberTasks.filter(teamMemberTasks => teamMemberTasks.status === "completed" && 
+          !excludedTaskIds.includes(teamMemberTasks.taskId)).length,
+        totalInProgressTasks: teamMemberTasks.filter(teamMemberTasks => teamMemberTasks.status === "inProgress" && 
+          !excludedTaskIds.includes(teamMemberTasks.taskId)).length,
+        totalNotStartedTasks: teamMemberTasks.filter(teamMemberTasks => teamMemberTasks.status === "notStarted" &&
+          !excludedTaskIds.includes(teamMemberTasks.taskId)).length,
+      };
+    } catch (error) {
+      throw new Error('Failed to generate task report: ' + error.message);
+    }
+  }
+
 }
 
 module.exports = ReportService;

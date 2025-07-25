@@ -45,6 +45,40 @@ router.get('/event', ReportController.getEventReport);
 
 /**
  * @swagger
+ * /report/task:
+ *   get:
+ *     summary: Get task report
+ *     tags: [Reports]
+ *     description: Retrieve a report of all tasks, including counts by status
+ *     responses:
+ *       200:
+ *         description: Task report retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 totalTaskAssignment:
+ *                   type: number
+ *                   description: Total task assignments
+ *                 totalCompletedTasks:
+ *                   type: number
+ *                   description: Total count of completed tasks for all team members
+ *                 totalInProgressTasks:
+ *                   type: number
+ *                   description: Total count of in progress tasks for all team members
+ *                 totalNotStartedTasks:
+ *                   type: number
+ *                   description: Total count of not started tasks for all team members 
+ *       500:
+ *         description: Failed to generate task report
+ */
+router.get('/task', ReportController.getTaskReport);
+
+
+
+/**
+ * @swagger
  * /report/event/{id}/invitedTeamMember:
  *   get:
  *     summary: Get invited team members for an event

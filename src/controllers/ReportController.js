@@ -43,6 +43,16 @@ class ReportController {
       next(error);
     }
   }
+
+  static async getTaskReport(req, res, next) {
+    try {
+      const report = await ReportService.getTaskReport();
+      res.json(report);
+    } catch (error) {
+      logger.error(`Error in getTaskReport: ${error.message}`);
+      next(error);
+    }
+  }
 }
 
 module.exports = ReportController;
