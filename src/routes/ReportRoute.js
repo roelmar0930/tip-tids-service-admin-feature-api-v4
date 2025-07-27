@@ -73,7 +73,7 @@ router.get('/event', ReportController.getEventReport);
  *       500:
  *         description: Failed to generate task report
  */
-router.get('/task', ReportController.getTaskReport);
+router.get('/task/details', ReportController.getTaskReportWithDetails);
 
 
 

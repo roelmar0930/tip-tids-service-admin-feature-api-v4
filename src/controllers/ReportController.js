@@ -44,9 +44,9 @@ class ReportController {
     }
   }
 
-  static async getTaskReport(req, res, next) {
+  static async getTaskReportWithDetails(req, res, next) {
     try {
-      const report = await ReportService.getTaskReport();
+      const report = await ReportService.getTaskReportWithDetails(req.timeZone);
       res.json(report);
     } catch (error) {
       logger.error(`Error in getTaskReport: ${error.message}`);

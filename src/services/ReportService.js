@@ -214,7 +214,7 @@ class ReportService {
         endDate: convertToTimezone(event.endDate, timezone),
         registeredTeamMembers: teamMemberEvents.filter(tme => tme.eventId.toString() === event.id.toString() && tme.status === 'registered').length,
         unregisteredTeamMembers: teamMemberEvents.filter(tme => tme.eventId.toString() === event.id.toString() && tme.status === 'unregistered').length,
-      })).filter(event => !event.isArchived)
+      })).filter(event => !event.isArchived);
 
       return {
         totalEvents: events.filter(event => !event.isArchived).length,
@@ -231,11 +231,21 @@ class ReportService {
     }
   }
 
-  static async getTaskReport() {
+  static async getTaskReportWithDetails(timezone = 'UTC') {
    try {
       const teamMemberTasks = await TeamMemberTask.find().lean();
       const archivedTasks = await Task.find({ isArchived: true }).lean();
       const excludedTaskIds = archivedTasks.map(task => task.id);
+
+      const listOfTasks = teamMemberTasks.map(task => ({
+        _id: task._id.toString(),
+        taskId: task.taskId,
+        title: task.title,
+        assignedDate: convertToTimezone(task.assignedDate || new Date(), timezone),
+        assignedTeamMembers: teamMemberTasks.filter(teamMemberTasks => 
+          !excludedTaskIds.includes(teamMemberTasks.taskId)).length,
+        unassignedTeamMembers: 0,
+      })).filter(teamMemberTasks => !excludedTaskIds.includes(teamMemberTasks.taskId));    
 
       return {
         totalTaskAssignment: teamMemberTasks.filter(teamMemberTasks => 
@@ -246,6 +256,7 @@ class ReportService {
           !excludedTaskIds.includes(teamMemberTasks.taskId)).length,
         totalNotStartedTasks: teamMemberTasks.filter(teamMemberTasks => teamMemberTasks.status === "notStarted" &&
           !excludedTaskIds.includes(teamMemberTasks.taskId)).length,
+        listOfTasks: listOfTasks
       };
     } catch (error) {
       throw new Error('Failed to generate task report: ' + error.message);
