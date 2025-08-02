@@ -24,6 +24,17 @@ class ReportController {
     }
   }
 
+  static async getTaskAssignedTeamMembers(req, res, next) {
+    try {
+      const { id } = req.params;
+      const report = await ReportService.getTaskAssignedTeamMembers(id);
+      res.json(report);
+    } catch (error) {
+      logger.error(`Error in getTaskAssignedTeamMembers: ${error.message}`);
+      next(error);
+    }
+  }  
+
   static async getEventReport(req, res, next) {
     try {
       const report = await ReportService.getEventReport();

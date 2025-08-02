@@ -168,6 +168,93 @@ router.get('/task/details', ReportController.getTaskReportWithDetails);
  */
 router.get('/event/:id/invitedTeamMember', ReportController.getEventInvitedTeamMembers);
 
+
+/**
+ * @swagger
+ * /report/task/{id}/assignedTeamMember:
+ *   get:
+ *     summary: Get assigned team members for a task
+ *     tags: [Reports]
+ *     description: Retrieve a list of team members assigned to a specific task
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Task ID
+ *     responses:
+ *       200:
+ *         description: Assigned team members retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 taskId:
+ *                   type: string
+ *                   description: ID of the task
+ *                 taskTitle:
+ *                   type: string
+ *                   description: Title of the task
+ *                 totalAssigned:
+ *                   type: number
+ *                   description: Total number of assigned team members
+ *                 assignedTeamMembers:
+ *                   type: array
+ *                   description: List of assigned team members
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       workdayId:
+ *                         type: string
+ *                         description: Team member's Workday ID
+ *                       email:
+ *                         type: string
+ *                         description: Team member's email
+ *                       fullName:
+ *                         type: string
+ *                         description: Team member's full name
+ *                       jobProfile:
+ *                         type: string
+ *                         description: Team member's job profile
+ *                       functionalArea:
+ *                         type: string
+ *                         description: Team member's functional area
+ *                       firstName:
+ *                         type: string
+ *                         description: Team member's first name
+ *                       lastName:
+ *                         type: string
+ *                         description: Team member's last name
+ *                       middleName:
+ *                         type: string
+ *                         description: Team member's middle name
+ *                       suffix:
+ *                         type: string
+ *                         description: Team member's name suffix
+ *                       immediateManagerName:
+ *                         type: string
+ *                         description: Name of immediate manager
+ *                       taskStatus:
+ *                         type: string
+ *                         enum: [assigned, unassigned]
+ *                         description: Status of team member's task assigment
+ *                       assignedDate:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Date when team member was assigned to the task
+ *                       tidsPractice:
+ *                         type: string
+ *                         description: TIDS practice area
+ *       404:
+ *         description: Task not found
+ *       500:
+ *         description: Failed to generate task assigned team members report
+ */
+router.get('/task/:id/assignedTeamMember', ReportController.getTaskAssignedTeamMembers);
+
+
 /**
  * @swagger
  * /report/event/compliance:

@@ -154,6 +154,55 @@ class ReportService {
     }
   }
 
+  static async getTaskAssignedTeamMembers(taskId) {
+    try {
+      const task = await Task.findById(taskId);
+      if (!task) {
+        throw new Error('Task not found');
+      }
+
+      const teamMemberTasks = await TeamMemberTask.find({ taskId: task.id }).lean();
+      const teamMemberIds = teamMemberTasks.map(tmt => tmt.teamMemberWorkdayId);
+      const teamMemberEmail = teamMemberTasks.map(tmt => tmt.teamMemberEmail);
+      const teamMembers = await TeamMember.find({ workdayId: { $in: teamMemberIds }, email: { $in: teamMemberEmail } }).lean();
+
+      // Create a map of workdayId to team member task details
+      const teamMemberTaskMap = teamMemberTasks.reduce((map, tmt) => {
+        map[tmt.teamMemberWorkdayId, tmt.teamMemberEmail] = {
+          status: tmt.status,
+          assignedDate: tmt.assignedDate
+        };
+        return map;
+      }, {});
+
+      const report = {
+        taskId: task._id,
+        taskTitle: task.title,
+        totalAssigned: teamMembers.length,
+        assignedTeamMembers: teamMembers.map(tm => ({
+          workdayId: tm.workdayId,
+          email: tm.email,
+          fullName: tm.firstName + ' '  + tm.middleName + ' ' + tm.lastName + ' ' + (tm.suffix ? tm.suffix : ''),
+          jobProfile: tm.jobProfile,
+          functionalArea: tm.functionalArea,
+          firstName: tm.firstName,
+          lastName: tm.lastName,
+          middleName: tm.middleName,
+          suffix: tm.suffix,
+          supervisorName: tm.supervisor.name,
+          operationalManagerName: tm.operationalManager.name,
+          taskStatus: teamMemberTaskMap[tm.workdayId, tm.email].status,
+          assignedDate: teamMemberTaskMap[tm.workdayId, tm.email].invitedDate,
+          tidsPractice: tm.practice,
+        }))
+      };
+
+      return report;
+    } catch (error) {
+      throw new Error('Failed to generate task assigned team members report: ' + error.message);
+    }
+  }  
+
   static async getEventReport() {
     try {
       const events = await Event.find().lean();
